@@ -4,13 +4,14 @@ CSCI 5117, Spring 2024, [assignment description](https://canvas.umn.edu/courses/
 
 ## App Info:
 
-* Team Name: TODO
-* App Name: TODO
+* Team Name: WASD
+* App Name: ???????
 * App Link: <https://TODO.com/>
 
 ### Students
 
 * First Last, x500@umn.edu
+Maurice Yu, yu000464@umn.edu
 * ...
 
 
@@ -20,6 +21,34 @@ CSCI 5117, Spring 2024, [assignment description](https://canvas.umn.edu/courses/
 (one sentence per bullet, maximum 4 bullets):**
 
 * ...
+* Logging:
+Water log
+Has daily recommended intake
+Calendar will show days you met the goal
+Graph of the trending of volume of water you take
+Possibly integrate clock timer or calendar to remind you to drink water
+
+
+Fitness log
+Exercise log
+Different types of exercise selection
+Attribute to calorie goal
+Calorie tracker	
+database/calculator/formula for calculating exercise calories 
+STRETCH GOAL
+Keep track of steps
+Get access to health data to check steps
+
+
+Weight log
+Goal date and progress graph
+Picture of yourself progress history
+Viewer for progress picture
+
+
+
+
+
 
 Which (if any) device integration(s) does your app support?
 
