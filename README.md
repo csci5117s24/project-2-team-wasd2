@@ -10,9 +10,11 @@ CSCI 5117, Spring 2024, [assignment description](https://canvas.umn.edu/courses/
 
 ### Students
 
-* First Last, x500@umn.edu
-Maurice Yu, yu000464@umn.edu
-* ...
+* Maurice Yu, yu000464@umn.edu
+* Dominic Deiman, deima013@umn.edu
+* Ling Wang, wan01872@umn.edu
+* Salma Abdi, abdi0300@umn.edu
+* Stuti Shah, shah0794@umn.edu
 
 
 ## Key Features
@@ -21,34 +23,6 @@ Maurice Yu, yu000464@umn.edu
 (one sentence per bullet, maximum 4 bullets):**
 
 * ...
-* Logging:
-Water log
-Has daily recommended intake
-Calendar will show days you met the goal
-Graph of the trending of volume of water you take
-Possibly integrate clock timer or calendar to remind you to drink water
-
-
-Fitness log
-Exercise log
-Different types of exercise selection
-Attribute to calorie goal
-Calorie tracker	
-database/calculator/formula for calculating exercise calories 
-STRETCH GOAL
-Keep track of steps
-Get access to health data to check steps
-
-
-Weight log
-Goal date and progress graph
-Picture of yourself progress history
-Viewer for progress picture
-
-
-
-
-
 
 Which (if any) device integration(s) does your app support?
 
@@ -62,10 +36,9 @@ Which (if any) progressive web app feature(s) does your app support?
 
 ## Mockup images
 
-**[Add images/photos that show your mockup](https://stackoverflow.com/questions/10189356/how-to-add-screenshot-to-readmes-in-github-repository) along with a very brief caption:**
+![image](./mockup/mockup2.jpg)
 
-![](https://media.giphy.com/media/26ufnwz3wDUli7GU0/giphy.gif)
-
+[Link to Figma](https://www.figma.com/file/8A0UDreILkoHiPGDTwKHhq/Untitled?type=design&node-id=43-460&mode=design&t=U4Nb8MSPDqZ8Vu1K-0)
 
 ## Testing Notes
 
