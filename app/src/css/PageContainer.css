@@ -1,0 +1,15 @@
+/* desktop only styles */
+
+@media all and (min-width:800px) {
+    .content-container {
+        width: 100vw;
+        padding-left: 20%;
+        padding-right: 20%;
+    }
+}
+
+@media all and (max-width:800px) {
+    .content-container {
+        width: 100vw;
+    }
+}

@@ -1,0 +1,10 @@
+
+.icon {
+    width: 20px;
+    height: 20px;
+}
+
+.header {
+    height: 71px;
+    background-color: var(--my-purple);
+}

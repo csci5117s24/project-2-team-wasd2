@@ -1,0 +1,35 @@
+
+.selected-span {
+    color: var(--my-blue);
+}
+
+.clickable-span:hover, .selected-span:hover {
+    cursor: pointer;
+    color: var(--my-blue);
+}
+
+.input-card {
+    padding: 2rem 5rem;
+}
+
+.goal-container {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.input-water-goal {
+    font-size: 2rem;
+    border: 0;
+    outline: 0;
+    text-align: center;
+    text-decoration: 2px solid underline;
+    line-height: 2;
+    text-underline-offset: 10rem;
+    background: linear-gradient(currentColor,currentColor) center bottom 6px no-repeat;
+    background-size: 10rem 2px;
+}
+
+.input-water-goal:focus{
+    text-decoration-color: dodgerblue;
+    background-image: linear-gradient(dodgerblue,dodgerblue)
+  }

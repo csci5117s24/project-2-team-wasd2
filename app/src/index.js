@@ -7,12 +7,23 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+import { WaterGoalRoute } from './routes/PageWaterGoal';
+import { WaterTrackerRoute } from './routes/PageWaterTracker';
+import { WaterCalendarRoute } from './routes/PageWaterCalendar';
+import { Chart, registerables} from 'chart.js';
+
+Chart.register(...registerables); // register char.js
 
 // create the router -- paths are configured here
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App/>,
+    children: [
+      WaterGoalRoute,
+      WaterTrackerRoute,
+      WaterCalendarRoute,
+    ]
   },
 ]);
 

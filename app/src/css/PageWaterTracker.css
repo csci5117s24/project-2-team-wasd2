@@ -1,0 +1,30 @@
+.bubble {
+    width: 200px;
+    height: 100px;
+    line-height: 100px;
+    margin: 0 auto;
+    text-align: center;
+    border-radius: 10px;
+    background-color: #A7A7DB;
+    position: relative;
+}
+
+.bubble:before {
+    content: "";
+    width: 0;
+    height: 0;
+    font-size:0;
+    overflow:hidden;
+    display: block;
+    border-width: 15px;
+    border-color: #A7A7DB transparent transparent transparent;
+    border-style: solid dashed dashed dashed;
+    position: absolute;
+    top: 100px;
+    left: 50%;
+}
+
+.cactus {
+    width: 5rem;
+    height: 5rem;
+}
