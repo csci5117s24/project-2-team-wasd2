@@ -1,0 +1,21 @@
+:root {
+    --my-purple: #836FFF;
+    --my-yellow: #FFD23F;
+    --my-blue: #3EA4F0;
+    --background-color: #F0F3FF;
+    --dark-purple: #211951;
+    --header-height: 70px;
+}
+
+.primary-title {
+    font-size: 3rem;
+    font-weight: bold;
+    /* margin-top: 5rem; */
+    margin-bottom: 2rem;
+}
+
+.secondary-title {
+    font-size: 2rem;
+    /* font-weight: bold; */
+    font-style: italic;
+}

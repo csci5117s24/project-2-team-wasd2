@@ -1,0 +1,18 @@
+
+.cactus-log {
+    height: 3rem;
+    width: 3rem;
+}
+
+.chart-container {
+    padding: 3rem;
+}
+
+.calendar-container {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
