@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageContainer from "../components/PageContainer";
-import { WeightGoal, WeightDeadline, UpdateWeightGoal, UpdateWeightLogList } from "../common/mock_data";
+import { weightGoal, weightDeadline, weightLogList, UpdateWeightGoal, UpdateWeightLogList } from "../common/mock_data";
 
 export const WeightTrackerRoute = {
     path: "/weight",
@@ -16,34 +16,25 @@ export const WeightTrackerRoute = {
 
 function PageWeightTracker() {
     const [goal, setGoal] = useState({});
-    const [achieved, setAchieved] = useState(0);
-    const [waterLogs, setWaterLogs] = useState([]);
+    const [weightLogs, setWeightLogs] = useState([]);
     const [showAddLog, setShowAddLog] = useState(false);
 
     useEffect(() => {
         async function fetchData() {
             // get goal
-            var curGoal = {goal: WeightGoal, deadline: WeightDeadline}
+            var curGoal = {goal: weightGoal, deadline: weightDeadline}
             // get water logs
-            var curLogs = waterLogList;
+            var curLogs = weightLogList;
             setGoal(curGoal);
-            setWaterLogs(curLogs);
+            setWeightLogs(curLogs);
             setAchieved(calAchieved());
         }
         fetchData();
-    }, [waterLogs]);
-
-    function calAchieved() {
-        var total = 0;
-        for (let i = 0; i < waterLogs.length; i++) {
-            total += waterLogs[i].value;
-        }
-        return Math.round(total/goal.value*100);
-    }
+    }, []);
 
     async function updateGoal(newGoal, isSubmit) {
         if (isSubmit) {
-            UpdateWaterGoal(newGoal.value);
+            UpdateWeightGoal(newGoal.goal, newGoal.deadline);
             setGoal(newGoal);
             setAchieved(calAchieved());
         } else {
