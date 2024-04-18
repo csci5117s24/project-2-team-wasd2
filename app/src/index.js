@@ -7,9 +7,14 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+
 import { WaterGoalRoute } from './routes/PageWaterGoal';
 import { WaterTrackerRoute } from './routes/PageWaterTracker';
 import { WaterCalendarRoute } from './routes/PageWaterCalendar';
+
+import { WeightGoalRoute } from './routes/PageWeightGoal';
+import { WeightTrackerRoute } from './routes/PageWeightTracker';
+
 import { Chart, registerables} from 'chart.js';
 import {WorkOutFormRoute} from './routes/WorkoutForm';
 
@@ -24,6 +29,8 @@ const router = createBrowserRouter([
       WaterGoalRoute,
       WaterTrackerRoute,
       WaterCalendarRoute,
+	  WeightGoalRoute,
+	  WeightTrackerRoute,
       WorkOutFormRoute
     ]
   },
