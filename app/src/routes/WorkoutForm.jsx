@@ -13,8 +13,13 @@ export const WorkOutFormRoute = {
         }
     ]
   }
+  export const MainpageWorkoutFormRoute = {
+    path: "/",
+    element: <WorkoutForm/>,
 
-function WorkoutForm() {
+}
+
+export function WorkoutForm() {
     const [workouts, setWorkouts] = useState([]);
     const [calorieGoal, setCalorieGoal] = useState(1000);
     const [editMode, setEditMode] = useState(false);

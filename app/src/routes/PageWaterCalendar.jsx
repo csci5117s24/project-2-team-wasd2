@@ -16,7 +16,13 @@ export const WaterCalendarRoute = {
     ]
 }
 
-function PageWaterCalendar() {
+export const MainpageWaterCalendarRoute = {
+    path: "/",
+    element: <PageWaterCalendar/>,
+
+}
+
+export function PageWaterCalendar() {
     const [value, setValue] = useState(new Date());
     const [waterLogs, setWaterLogs] = useState([]);
 

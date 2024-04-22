@@ -9,9 +9,11 @@ import {
 } from "react-router-dom";
 import { WaterGoalRoute } from './routes/PageWaterGoal';
 import { WaterTrackerRoute } from './routes/PageWaterTracker';
-import { WaterCalendarRoute } from './routes/PageWaterCalendar';
+import { MainpageWaterCalendarRoute, WaterCalendarRoute } from './routes/PageWaterCalendar';
 import { Chart, registerables} from 'chart.js';
-import {WorkOutFormRoute} from './routes/WorkoutForm';
+import {MainpageWorkoutFormRoute, WorkOutFormRoute} from './routes/WorkoutForm';
+import { MainpageWaterRoute } from './routes/PageMainpageWater';
+import { MainpageWorkoutRoute } from './routes/PageMainpageWorkout';
 
 Chart.register(...registerables); // register char.js
 
@@ -24,7 +26,10 @@ const router = createBrowserRouter([
       WaterGoalRoute,
       WaterTrackerRoute,
       WaterCalendarRoute,
-      WorkOutFormRoute
+      WorkOutFormRoute,
+      MainpageWaterRoute,
+      MainpageWorkoutRoute,
+      MainpageWorkoutFormRoute
     ]
   },
 ]);
