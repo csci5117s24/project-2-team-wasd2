@@ -13,3 +13,7 @@
         width: 100vw;
     }
 }
+
+.hero-body {
+    align-items: start !important;
+}

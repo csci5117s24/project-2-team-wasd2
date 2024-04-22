@@ -127,15 +127,15 @@ function NavigationBar({ goal, updateGoal}) {
                     <img className="icon" src="/water_drop.svg" alt="icon"></img>
                 </div>
                 <div className="level-item">
-                    <input type="text" 
+                    {editGoal ? <input type="text" 
                     value={goal.value} disabled={!editGoal}
                     onChange={e=>handleGoalChange(e)}
-                    /> <span>{goal.unit}</span>
+                    /> : <span>{goal.value}</span>} <span>{goal.unit}</span>
                 </div>
                 <div className="level-item">
                     { !editGoal 
-                    ? <img className="icon" src="/edit_fill.svg" alt="edit" onClick={enableEditGoal}></img>
-                    : <button onClick={confirmEditGoal}>Confirm</button>}
+                    ? <img className="functional-icon" src="/edit_fill.svg" alt="edit" onClick={enableEditGoal}/>
+                    : <img className="functional-icon" src="/done.svg" alt="edit" onClick={confirmEditGoal}/>}
                 </div>
             </div>
             <div className="level-right">
