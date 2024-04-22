@@ -21,7 +21,7 @@ function PageWaterTracker() {
     const [showAddLog, setShowAddLog] = useState(false);
 
     useEffect(() => {
-        async function fetchData() {
+        function fetchData() {
             // get goal
             var curGoal = {value: WaterGoal, unit: "ml"}
             // get water logs

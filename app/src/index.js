@@ -31,12 +31,12 @@ const router = createBrowserRouter([
       WaterGoalRoute,
       WaterTrackerRoute,
       WaterCalendarRoute,
-	  WeightGoalRoute,
-	  WeightTrackerRoute,
+	    WeightGoalRoute,
+	    WeightTrackerRoute,
       WorkOutFormRoute,
       MainpageWaterRoute,
-      MainpageWorkoutRoute,
-      MainpageWorkoutFormRoute
+      // MainpageWorkoutRoute,
+      // MainpageWorkoutFormRoute
     ]
   },
 ]);
