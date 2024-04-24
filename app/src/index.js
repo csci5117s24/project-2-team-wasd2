@@ -35,7 +35,8 @@ const router = createBrowserRouter([
 	    WeightGoalRoute,
 	    WeightTrackerRoute,
       WorkOutFormRoute,
-      MainpageWaterRoute,
+      MainpageBodyRoute
+      // MainpageWaterRoute,
       // MainpageWorkoutRoute,
       // MainpageWorkoutFormRoute
     ]

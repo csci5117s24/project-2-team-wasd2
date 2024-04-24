@@ -11,6 +11,11 @@ import { PageWeightTracker } from "./PageWeightTracker";
 
 export const MainpageBodyRoute = {
     path: "/",
-    element: [<PageWaterCalendar/>,<WorkoutForm/>,<PageWeightTracker/>]
-
+    element: <PageContainer/>,
+    children: [
+        {
+        path: "/",
+        element: [<PageWaterCalendar/>,<WorkoutForm/>,<PageWeightTracker/>]
+        }
+    ]
 }
