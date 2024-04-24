@@ -8,7 +8,7 @@ function Header() {
                 <div className="level-item">
                     <NavLink to="/">
 						<img className="icon" src="/cactus.svg" alt="cactus logo"></img>
-                    	<span>Our App Name</span>
+                    	<span className="app-name">Health Tracker</span>
 					</NavLink>
                 </div>
             </div>
