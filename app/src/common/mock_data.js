@@ -52,13 +52,13 @@ export function UpdateWeightLogList(newList) {
 
 // water log data structures
 // water goal 
-watergoal = {
+const watergoal = {
     value: 5000,
     unit: "ml", // ml / oz
 }
 
 // single water log
-waterlog = {
+const waterlog = {
     id: "123",
     userid: "456",
     value: 5000,
@@ -67,7 +67,7 @@ waterlog = {
 }
 
 // daily statistics (for last 7 days)
-dailyStatistics = [
+const dailyStatistics = [
     {label: "Apr 1", value: 2000, unit: "ml"},
     {label: "Apr 2", value: 3000, unit: "ml"},
     {label: "Apr 3", value: 3000, unit: "ml"},
@@ -78,7 +78,7 @@ dailyStatistics = [
 ]
 
 // weekly statistics (for last 4 weeks)
-weeklyStatistics = [
+const weeklyStatistics = [
     {label: "Mar17-Mar23", value: 14000, unit: "ml"},
     {label: "Mar24-Mar30", value: 30000, unit: "ml"},
     {label: "Mar31-Apr6", value: 10000, unit: "ml"},
@@ -86,7 +86,7 @@ weeklyStatistics = [
 ]
 
 // monthly statistics (for last 12 weeks)
-mothlyStatistics = [
+const mothlyStatistics = [
     {label: "May", value: 3000, unit: "ml"},
     {label: "Jun", value: 2500, unit: "ml"},
     {label: "Jul", value: 0, unit: "ml"},
