@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import PageContainer from "../components/PageContainer";
 import { weightGoal, weightDeadline, weightLogList, UpdateWeightGoal, UpdateWeightLogList } from "../common/mock_data";
 import { InputWithTwoUnits } from '../components/InputWithTwoUnits';
