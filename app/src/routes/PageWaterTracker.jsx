@@ -14,7 +14,7 @@ export const WaterTrackerRoute = {
     ]
 }
 
-function PageWaterTracker() {
+export function PageWaterTracker() {
     const [goal, setGoal] = useState({});
     const [achieved, setAchieved] = useState(0);
     const [waterLogs, setWaterLogs] = useState([]);

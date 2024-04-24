@@ -24,7 +24,7 @@ export const WeightTrackerRoute = {
 
 const kgToLbsCoefficient = 2.20462;
 
-function PageWeightTracker() {
+export function PageWeightTracker() {
     const [goal, setGoal] = useState({});
     const [weightLogs, setWeightLogs] = useState([]);
     const [showAddLog, setShowAddLog] = useState(false);

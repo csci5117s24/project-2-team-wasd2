@@ -17,7 +17,7 @@ export const WeightGoalRoute = {
 
 const kgToLbsCoefficient = 2.20462;
 
-function PageWeightGoal() {
+export function PageWeightGoal() {
     const [current, setCurrent] = useState({value: 0, unit: "kg"});
     const [goal, setGoal] = useState({value: 0, unit: "kg"});
     const [deadline, setDeadline] = useState({value: undefined, unit: "ml"});

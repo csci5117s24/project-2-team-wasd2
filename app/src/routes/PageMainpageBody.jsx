@@ -9,7 +9,7 @@ import WorkoutForm from "./WorkoutForm";
 import { PageWeightGoal } from "./PageWeightGoal";
 import { PageWeightTracker } from "./PageWeightTracker";
 
-export const MainpageWaterRoute = {
+export const MainpageBodyRoute = {
     path: "/",
     element: [<PageWaterCalendar/>,<WorkoutForm/>,<PageWeightTracker/>]
 
