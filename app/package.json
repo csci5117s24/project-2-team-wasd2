@@ -18,6 +18,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "web": "npx @azure/static-web-apps-cli start http://localhost:3000 --run \"npm start\" --api-location ./api",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -40,4 +41,5 @@
       "last 1 safari version"
     ]
   }
+  , "proxy":"http://localhost:7071"
 }
