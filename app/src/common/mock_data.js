@@ -100,3 +100,38 @@ const mothlyStatistics = [
     {label: "Mar", value: 2000,unit: "ml"},
     {label: "Apr", value: 3000,unit: "ml"},
 ]
+
+
+//workouts
+function listWorkouts() {
+    return [
+        {id: 1, title: "Morning Run", description: "A quick morning run around the park", calories: 300},
+        {id: 2, title: "Bike Ride", description: "Cycling through the city to the office", calories: 250},
+        {id: 3, title: "Swimming", description: "Half an hour swimming session", calories: 400}
+    ];
+}
+
+function createWorkout(workout) {
+    console.log('Creating workout:', workout);
+    return { ...workout, id: new Date().getTime() }; 
+}
+
+function updateWorkout(workoutId, workout) {
+    console.log(`Updating workout ${workoutId}:`, workout);
+    return { ...workout, id: workoutId };
+}
+
+function deleteWorkout(workoutId) {
+    console.log(`Deleting workout with ID: ${workoutId}`);
+    return { message: "Workout deleted successfully" };
+}
+
+function getCalorieGoal() {
+    return { calorieGoal: 1500 };
+}
+function updateCalorieGoal(calorieGoal) {
+    const timestamp = new Date().toISOString();
+    console.log(`Updating calorie goal to: ${calorieGoal} at: ${timestamp}`);
+    return { calorieGoal, timestamp };
+}
+
