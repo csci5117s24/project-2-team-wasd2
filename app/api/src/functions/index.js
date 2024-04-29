@@ -72,7 +72,7 @@ app.http('getWaterLogs', {
 app.http('getWorkoutLogs', {
     methods: ["GET"], 
     authLevel: "anonymous",
-    route: "workout/log", 
+    route: "workout/logs", 
     handler: async (request, context) => {
         // take care of auth
         const token = await authenticate(request);
@@ -90,24 +90,24 @@ app.http('getWorkoutLogs', {
     }
 })
 
-app.http('getCalorieGoal', {
+app.http('getWorkoutLog', {
     methods: ["GET"], 
     authLevel: "anonymous",
-    route: "caloriegoal", 
+    route: "workout/log", 
     handler: async (request, context) => {
         // take care of auth
         const token = await authenticate(request);
         const userId = token.userId; 
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const timestamp = request.params.timestamp;
-        const weightlog = await client.db("tracker").collection("workout").find({userId: userId,timestamp:timestamp}).toArray();
+        const workoutlog = await client.db("tracker").collection("workout").find({userId: userId,timestamp:timestamp}).toArray();
         client.close();
 
-        console.log(weightlog);
+        console.log(workoutlog);
 
         return {
             status: 200, 
-            jsonBody: {weightlog: weightlog}
+            jsonBody: {workoutlog: workoutlog}
         }
     }
 })
@@ -307,9 +307,9 @@ app.http('postWorkoutLog', {
         const title = request.body.title ?? 0;
         const description = request.body.description ?? "none"; 
         const calories = request.body.calories;
-        const date = request.body.timestamp ?? 0;
-
-        const payload = {userId, title, description, calories};
+        const timestamp = request.body.timestamp ?? 0;
+        const goal = request.body.goal ?? 0;
+        const payload = {userId,timestamp, title, description, calories,goal};
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const result = await client.db("tracker").collection("weight").insertOne(payload);
         client.close();
