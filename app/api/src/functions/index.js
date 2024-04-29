@@ -90,6 +90,27 @@ app.http('getWorkoutLogs', {
     }
 })
 
+app.http('getCalorieGoal', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "caloriegoal", 
+    handler: async (request, context) => {
+        // take care of auth
+        const token = await authenticate(request);
+        const userId = token.userId; 
+        const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
+        const timestamp = request.params.timestamp;
+        const weightlog = await client.db("tracker").collection("workout").find({userId: userId,timestamp:timestamp}).toArray();
+        client.close();
+
+        console.log(weightlog);
+
+        return {
+            status: 200, 
+            jsonBody: {weightlog: weightlog}
+        }
+    }
+})
 app.http('getWeightLogs', {
     methods: ["GET"], 
     authLevel: "anonymous",
