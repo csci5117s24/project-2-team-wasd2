@@ -1,22 +1,18 @@
 import { Outlet } from "react-router-dom";
-import Footer from "./Footer";
 import Header from "./Header";
 import "../css/PageContainer.css";
 
 
 function PageContainer() {
     return (
-        <div className="hero is-fullheight">
-            <div className="hero-head">
+        <div>
+            <nav className="navbar">
                 <Header></Header>
-            </div>
-            <div className="hero-body">
+            </nav>
+            <div  className="hero is-fullheight-with-navbar">
                 <div className="content-container">
                     <Outlet></Outlet>
                 </div>
-            </div>
-            <div className="hero-foot">
-                <Footer></Footer>
             </div>
         </div>
     )

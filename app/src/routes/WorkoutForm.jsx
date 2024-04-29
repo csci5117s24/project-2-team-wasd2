@@ -48,6 +48,11 @@ export function WorkoutForm() {
     };
 
     return (
+        <div>
+            <div className="motto-container">
+                <p className="motto">Strength for Life: Embrace Fitness, Choose Wellness!</p>
+                <img src="/quote-right.svg" alt="quote"></img>
+            </div>
         <div className={styles.container}>
             {/* Calorie Goal */}
             <div>
@@ -85,6 +90,7 @@ export function WorkoutForm() {
                     </div>
                 ))}
             </div>
+        </div>
         </div>
     );
 }

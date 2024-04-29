@@ -13,3 +13,10 @@
         width: 100vw;
     }
 }
+
+.hero {
+    align-items: start !important;
+    width: 100%;
+    /* background: linear-gradient(-90deg, var(--my-green), 10%, white); */
+    padding-top: 3rem;
+}

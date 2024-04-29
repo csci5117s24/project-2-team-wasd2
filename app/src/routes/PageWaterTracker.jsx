@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageContainer from "../components/PageContainer";
 import { UpdateWaterGoal, UpdateWaterLogList, WaterGoal, waterLogList } from "../common/mock_data";
+import LiquidGuage from "../components/LiquidGauge";
+import styles from '../css/WorkoutForm.module.css';
 
 export const WaterTrackerRoute = {
     path: "/water",
@@ -18,7 +20,7 @@ export function PageWaterTracker() {
     const [goal, setGoal] = useState({});
     const [achieved, setAchieved] = useState(0);
     const [waterLogs, setWaterLogs] = useState([]);
-    const [showAddLog, setShowAddLog] = useState(false);
+    // const [showAddLog, setShowAddLog] = useState(false);
 
     useEffect(() => {
         function fetchData() {
@@ -78,70 +80,74 @@ export function PageWaterTracker() {
 
     return (
         <div className="container">
+            <div className="motto-container">
+                <p className="motto">Hydrate to Elevate: Fuel Your Life with H<sub>2</sub>O!</p>
+                <img src="/quote-right.svg" alt="quote"></img>
+            </div>
+            <div className={styles.container}>
             <NavigationBar goal={goal} updateGoal={updateGoal}/>
-            <h1 className="primary-title"><span>{achieved}%</span> of your goal achieved</h1>
-            <button className="button is-primary" onClick={()=> setShowAddLog(true)}>Add Water</button>
-            {showAddLog && <WaterLogModal
-                showModal={showAddLog}
-                setShowModal={setShowAddLog}
-                waterLog={undefined} 
-                unit={goal.unit} 
-                addOrUpdateLog={newWaterLog}/>}
+            <div className="columns">
+                <div className="column is-two-fifths">
+                    <LiquidGuage style={{ margin: 'auto' }}
+                            radius={75}
+                            value={achieved}/>
+                    <h1><span>{achieved}%</span> of your goal achieved</h1>
+                </div>
+                
+                <div className="column auto">
+                    <NewWaterLog unit={goal.unit} addWaterLog={newWaterLog}/>
+                </div>
+            </div>
             <WaterLogList waterLogs={waterLogs} editLog={editLog} deleteLog={deleteLog}></WaterLogList>
+            </div>
         </div>
     )
 }
 
 function NavigationBar({ goal, updateGoal}) {
     
-    const [editGoal, setEditGoal] = useState(false);
+    // const [editGoal, setEditGoal] = useState(false);
 
-    function enableEditGoal() {
-        setEditGoal(true);
-    }
+    // function enableEditGoal() {
+    //     setEditGoal(true);
+    // }
 
-    function handleGoalChange(e) {
-        var newValue = e.target.value;
-        if (newValue) {
-            newValue = parseInt(newValue);
-            if (isNaN(newValue)) {
-                alert("invalid value!");
-                return
-            }
-        }
-        updateGoal({
-            value: newValue,
-            unit: goal.unit,
-        }, false);
-    }
+    // function handleGoalChange(e) {
+    //     var newValue = e.target.value;
+    //     if (newValue) {
+    //         newValue = parseInt(newValue);
+    //         if (isNaN(newValue)) {
+    //             alert("invalid value!");
+    //             return
+    //         }
+    //     }
+    //     updateGoal({
+    //         value: newValue,
+    //         unit: goal.unit,
+    //     }, false);
+    // }
 
-    function confirmEditGoal() {
-        updateGoal(goal, true);
-        setEditGoal(false);
-    }
+    // function confirmEditGoal() {
+    //     updateGoal(goal, true);
+    //     setEditGoal(false);
+    // }
 
     return (
-        <div className="level">
-            <div className="level-left">
-                <div className="level-item">
-                    <img className="icon" src="/water_drop.svg" alt="icon"></img>
-                </div>
-                <div className="level-item">
-                    <input type="text" 
+        <div className="sub-nav">
+            <img className="icon" src="/target.svg" alt="icon"></img>
+            <span style={{marginLeft: '1rem', marginRight: '1rem'}}>{"" + goal.value + " " + goal.unit }</span>
+            <Link to="/water/goal">
+                <img className="functional-icon" src="/edit_fill.svg" alt="edit goal"/>
+            </Link>
+            {/* {editGoal ? <input type="text" 
                     value={goal.value} disabled={!editGoal}
                     onChange={e=>handleGoalChange(e)}
-                    /> <span>{goal.unit}</span>
-                </div>
-                <div className="level-item">
-                    { !editGoal 
-                    ? <img className="icon" src="/edit_fill.svg" alt="edit" onClick={enableEditGoal}></img>
-                    : <button onClick={confirmEditGoal}>Confirm</button>}
-                </div>
-            </div>
-            <div className="level-right">
-                <div className="level-item">
-                    <Link to="/water/calendar"><img className="icon" src="/calendar.svg" alt="calendar"/></Link>
-                </div>
+                    /> : <span>{goal.value}</span>} <span>{goal.unit}</span>
+            { !editGoal 
+                    ? <img className="functional-icon" src="/edit_fill.svg" alt="edit" onClick={enableEditGoal}/>
+                    : <img className="functional-icon" src="/done.svg" alt="edit" onClick={confirmEditGoal}/>} */}
+            <div className="calendar-icon">
+                <Link to="/water/calendar"><img className="icon" src="/calendar.svg" alt="calendar"/></Link>
             </div>
         </div>
     )
@@ -155,7 +161,7 @@ function WaterLogList({ waterLogs, editLog, deleteLog }) {
         )
 
     return (
-        <div className="grid">
+        <div className="section fixed-grid log-list">
             { loglist }
         </div>
     )
@@ -163,19 +169,27 @@ function WaterLogList({ waterLogs, editLog, deleteLog }) {
 
 function LogItem({log, editLog, deleteLog}) {
     
-    const [showBubble, setShowBubble] = useState(false);
+    // const [showBubble, setShowBubble] = useState(false);
     const [showEditLog, setShowEditLog] = useState(false);
 
     return (
-        <div onClick={()=>setShowBubble(!showBubble)}>
-            <img className="cactus" src="/cactus.svg" alt="decoration"/>
-            <p>{log.value + log.unit}</p>
-            { showBubble &&
-                <div className="one">
-                    <button className="button is-info" onClick={()=>setShowEditLog(true)}>Edit</button>
-                    <button className="button is-danger" onClick={()=>deleteLog(log.id)}>Delete</button>
-                </div> 
-            }
+        <div className="card waterlog-item">
+            <div className="level">
+                <div className="level-left">
+                    <div className="level-item">
+                        <img className="cactus" src="/cactus.svg" alt="decoration"/>
+                    </div>
+                    <div className="level-item">
+                        <p>{log.value + log.unit}</p>
+                    </div>
+                </div>
+                <div className="level-right">
+                    <div className="level-item">
+                        <button className="button is-info" onClick={()=>setShowEditLog(true)}>Edit</button>
+                    </div>
+                    <button className="level-item button is-danger" onClick={()=>deleteLog(log.id)}>Delete</button>
+                </div>
+            </div>
             {showEditLog && <WaterLogModal 
                 showModal={showEditLog} 
                 setShowModal={setShowEditLog}
@@ -184,6 +198,24 @@ function LogItem({log, editLog, deleteLog}) {
                 addOrUpdateLog={editLog}/>}
         </div>
     )
+    // return (
+    //     <div onClick={()=>setShowBubble(!showBubble)}>
+    //         <img className="cactus" src="/cactus.svg" alt="decoration"/>
+    //         <p>{log.value + log.unit}</p>
+    //         { showBubble &&
+    //             <div className="one">
+    //                 <button className="button is-info" onClick={()=>setShowEditLog(true)}>Edit</button>
+    //                 <button className="button is-danger" onClick={()=>deleteLog(log.id)}>Delete</button>
+    //             </div> 
+    //         }
+    //         {showEditLog && <WaterLogModal 
+    //             showModal={showEditLog} 
+    //             setShowModal={setShowEditLog}
+    //             waterLog={log}
+    //             unit={log.unit}
+    //             addOrUpdateLog={editLog}/>}
+    //     </div>
+    // )
 }
 
 
@@ -232,6 +264,38 @@ function WaterLogModal({ showModal, setShowModal, waterLog, unit, addOrUpdateLog
                 </div>
                 </footer>
             </div>
+        </div>
+    )
+}
+
+function NewWaterLog({unit, addWaterLog}) {
+
+    const [value, setValue] = useState(0);
+
+    function handleInputChange(e) {
+        var newValue = e.target.value;
+        if (newValue) {
+            newValue = parseInt(newValue);
+            if (isNaN(newValue)) {
+                alert("invalid value!");
+                return
+            }
+        }
+        setValue(newValue);
+    }
+
+    function handleSubmit(value) {
+        addWaterLog({value: value, unit: unit});
+        setValue(0);
+    }
+
+    return (
+        <div>
+            <div className="new-water-input">
+                <input className="input" type="text" value={value} onChange={e => handleInputChange(e)}></input> 
+                <span>{unit}</span>
+            </div>
+            <button className="button new-water-log" onClick={() => handleSubmit(value)}>Drink More Water </button>
         </div>
     )
 }

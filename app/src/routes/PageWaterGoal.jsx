@@ -36,11 +36,12 @@ function PageWaterGoal() {
 
     async function setWaterGoal() {
         UpdateWaterGoal(goal.value);
+        window.location.href = "/water";
     }
 
     return (
         <div className="container">
-            <h1 className="primary-title">See how much you need</h1>
+            <h1 className="primary-title">See how much water you need</h1>
             <InputWithTwoUnits 
                 title="Height" 
                 units={["cm", "in"]} 
@@ -60,7 +61,7 @@ function PageWaterGoal() {
             <div className="goal-container">
                 <h1 className="secondary-title">suggested daily water intake</h1>
                 <WaterIntakeGoal data={goal} handleGoalChange={setGoal}/>
-                <button className="button is-primary" onClick={setWaterGoal}>set as goal</button>
+                <button className="button is-primary" onClick={setWaterGoal}>Set as Goal</button>
             </div>
             }
         </div>

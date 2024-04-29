@@ -49,15 +49,9 @@ export function PageWaterCalendar() {
 
 function NavigationBar() {
     return (
-        <div className="level">
-            <div className="level-right">
-                <div className="level-item">
-                    <img className="icon" src="/water_drop.svg" alt="to water log"/>
-                </div>
-                <div className="level-item">
-                    <Link to="/water"> Back to Water Log</Link>
-                </div>
-            </div>
+        <div className="sub-nav">
+            <img className="icon" src="/water_drop.svg" alt="to water log"/>
+            <Link to="/water"> Back to Water Log</Link>
         </div>
     )
 }

@@ -82,7 +82,11 @@ export function PageWeightTracker() {
 	
     return (
         <div className="container">
-            <h1 className="primary-title">Weight Logs</h1>
+            <div className="motto-container">
+                <p className="motto">Balance for Better: Choose Health!</p>
+                <img src="/quote-right.svg" alt="quote"></img>
+            </div>
+            {/* <h1 className="primary-title">Weight Logs</h1> */}
             <button className="button is-primary" onClick={()=> setShowAddLog(true)}>Record Weight for Today</button>
             {showAddLog && <WeightLogModal
                 showModal={showAddLog}
