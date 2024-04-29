@@ -5,18 +5,19 @@
     --background-color: #F0F3FF;
     --dark-purple: #211951;
     --header-height: 70px;
+    --my-orange: #FF8A08;
+    --my-green: #14F3CB;
 }
 
 .primary-title {
     font-size: 3rem;
-    font-weight: bold;
-    /* margin-top: 5rem; */
+    font-weight: 700;
+    margin-top: 2rem;
     margin-bottom: 2rem;
 }
 
 .secondary-title {
     font-size: 2rem;
-    /* font-weight: bold; */
     font-style: italic;
 }
 
@@ -25,3 +26,30 @@
     height: 1rem;
     width: 1rem;
 }
+
+.motto-container {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 2rem;
+}
+
+.motto {
+    font-size: 2rem;
+    font-weight: 900;
+    color: white; 
+    border-radius: 10px;
+    background: linear-gradient(127deg, var(--my-green), var(--my-purple) 70.71%);
+    /* background: linear-gradient(217deg, var(--my-blue), pink); */
+    padding: 1rem;
+    margin-top: 2rem;
+    text-align: left;
+    flex: 1;
+}
+
+.motto-container img{
+    width: 3rem;
+    align-self: flex-start;
+    margin-left: auto;
+}
+
+
