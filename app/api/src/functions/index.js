@@ -17,15 +17,11 @@ app.http('ping', {
 
 
 async function authenticate(request) {
-    const auth_header = request.headers["X-MS-CLIENT-PRINCIPAL"];
+    const auth_header = request.headers.get("X-MS-CLIENT-PRINCIPAL");
     let token = null; 
     if (auth_header) {
         token = JSON.parse(Buffer.from(auth_header, 'base64').toString());
-        token.userId = token.userDetails;
         console.log(token); 
-    } else {
-        // fixme: remove this in production
-        // token = {userId: "dfd89f010bdf8dd6aef7ff396973e39b"};
     }
     return token;
 }
