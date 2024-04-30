@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageContainer from "../components/PageContainer";
-import { UpdateWaterGoal, UpdateWaterLogList, WaterGoal, waterLogList } from "../common/mock_data";
 import LiquidGuage from "../components/LiquidGauge";
 import styles from '../css/WorkoutForm.module.css';
+import { SendDelete, SendGet, SendUpdate, SendPost } from "../common/http";
 
 export const WaterTrackerRoute = {
     path: "/water",
@@ -16,26 +16,51 @@ export const WaterTrackerRoute = {
     ]
 }
 
+async function getWaterGoal() {
+    const goal = await SendGet("/api/water/goal", {});
+    return goal.goal;
+}
+
+async function newWaterLog(value, unit) {
+    const res = await SendPost("/api/water", {value: value, unit: unit});
+    return res.id;
+}
+
+async function getWaterLogs() {
+    const logs = await SendGet("/api/waterlog");
+    return logs.waterlog;
+}
+
+async function updateWaterLog(id, value, unit) {
+    console.log("update water log. id: ", id);
+    await SendUpdate("/api/water" , {id: id, value: value, unit: unit});
+}
+
+async function deleteWaterLog(id) {
+    await SendDelete("/api/water", {id: id});
+}
+
 export function PageWaterTracker() {
     const [goal, setGoal] = useState({});
     const [achieved, setAchieved] = useState(0);
     const [waterLogs, setWaterLogs] = useState([]);
-    // const [showAddLog, setShowAddLog] = useState(false);
 
     useEffect(() => {
-        function fetchData() {
-            // get goal
-            var curGoal = {value: WaterGoal, unit: "ml"}
-            // get water logs
-            var curLogs = waterLogList;
-            setGoal(curGoal);
+        async function fetchData() {
+            const curGoal = await getWaterGoal();
+            if (!curGoal) {
+                window.location.href = "/water/goal";
+            }
+            const curLogs = await getWaterLogs();
+            const newAchieved = calAchieved(curLogs, curGoal);
+            setGoal({value: curGoal.value, unit: curGoal.unit});
             setWaterLogs(curLogs);
-            setAchieved(calAchieved());
+            setAchieved(newAchieved);
         }
         fetchData();
-    }, [waterLogs]);
+    }, []);
 
-    function calAchieved() {
+    function calAchieved(waterLogs, goal) {
         var total = 0;
         for (let i = 0; i < waterLogs.length; i++) {
             total += waterLogs[i].value;
@@ -43,39 +68,43 @@ export function PageWaterTracker() {
         return Math.round(total/goal.value*100);
     }
 
-    async function updateGoal(newGoal, isSubmit) {
-        if (isSubmit) {
-            UpdateWaterGoal(newGoal.value);
-            setGoal(newGoal);
-            setAchieved(calAchieved());
-        } else {
-            setGoal(newGoal);
-        }
+    async function editLog(data) {
+        updateWaterLog(data.id, data.value, data.unit);
+        const newWaterLogs = waterLogs.map((log)=>{
+            if (log._id === data.id) {
+                var updatedLog = log;
+                updatedLog.value = data.value;
+                updatedLog.unit = data.unit;
+                return updatedLog;
+            } else {
+                return log;
+            }
+        })
+        const newAchieved = calAchieved(newWaterLogs, goal);
+        setWaterLogs(newWaterLogs);
+        setAchieved(newAchieved);
     }
 
-    function editLog(data) {
-        console.log("edit log");
-        var idx = waterLogList.findIndex(nl => nl.id === data.id);
-        waterLogList[idx].value = data.value;
-        setWaterLogs(waterLogList);
-        setAchieved(calAchieved());
+    async function deleteLog(id) {
+        deleteWaterLog(id);
+        const newWaterLogs = waterLogs.filter(wl => wl._id !== id);
+        const newAchieved = calAchieved(newWaterLogs, goal);
+        setWaterLogs(newWaterLogs);
+        setAchieved(newAchieved)
     }
 
-    function deleteLog(id) {
-        console.log("delete log");
-        UpdateWaterLogList(waterLogList.filter(wl => wl.id !== id));
-        setWaterLogs(waterLogList);
-    }
-
-    async function newWaterLog(data) {
-        var newLog = {
+    async function addWaterLog(data) {
+        const logId = await newWaterLog(data.value, data.unit);
+        const newLog = {
+            _id: logId,
+            id: logId,
             value: data.value,
             unit: data.unit,
         }
-        newLog.id = Date.now();
-        waterLogList.push(newLog);
         const newLogs = [...waterLogs, newLog];
+        const newAchieved = calAchieved(newLogs, goal);
         setWaterLogs(newLogs);
+        setAchieved(newAchieved);
     }
 
     return (
@@ -85,7 +114,7 @@ export function PageWaterTracker() {
                 <img src="/quote-right.svg" alt="quote"></img>
             </div>
             <div className={styles.container}>
-            <NavigationBar goal={goal} updateGoal={updateGoal}/>
+            <NavigationBar goal={goal}/>
             <div className="columns">
                 <div className="column is-two-fifths">
                     <LiquidGuage style={{ margin: 'auto' }}
@@ -95,7 +124,7 @@ export function PageWaterTracker() {
                 </div>
                 
                 <div className="column auto">
-                    <NewWaterLog unit={goal.unit} addWaterLog={newWaterLog}/>
+                    <NewWaterLog unit={goal.unit} addWaterLog={addWaterLog}/>
                 </div>
             </div>
             <WaterLogList waterLogs={waterLogs} editLog={editLog} deleteLog={deleteLog}></WaterLogList>
@@ -104,33 +133,7 @@ export function PageWaterTracker() {
     )
 }
 
-function NavigationBar({ goal, updateGoal}) {
-    
-    // const [editGoal, setEditGoal] = useState(false);
-
-    // function enableEditGoal() {
-    //     setEditGoal(true);
-    // }
-
-    // function handleGoalChange(e) {
-    //     var newValue = e.target.value;
-    //     if (newValue) {
-    //         newValue = parseInt(newValue);
-    //         if (isNaN(newValue)) {
-    //             alert("invalid value!");
-    //             return
-    //         }
-    //     }
-    //     updateGoal({
-    //         value: newValue,
-    //         unit: goal.unit,
-    //     }, false);
-    // }
-
-    // function confirmEditGoal() {
-    //     updateGoal(goal, true);
-    //     setEditGoal(false);
-    // }
+function NavigationBar({ goal}) {
 
     return (
         <div className="sub-nav">
@@ -139,13 +142,6 @@ function NavigationBar({ goal, updateGoal}) {
             <Link to="/water/goal">
                 <img className="functional-icon" src="/edit_fill.svg" alt="edit goal"/>
             </Link>
-            {/* {editGoal ? <input type="text" 
-                    value={goal.value} disabled={!editGoal}
-                    onChange={e=>handleGoalChange(e)}
-                    /> : <span>{goal.value}</span>} <span>{goal.unit}</span>
-            { !editGoal 
-                    ? <img className="functional-icon" src="/edit_fill.svg" alt="edit" onClick={enableEditGoal}/>
-                    : <img className="functional-icon" src="/done.svg" alt="edit" onClick={confirmEditGoal}/>} */}
             <div className="calendar-icon">
                 <Link to="/water/calendar"><img className="icon" src="/calendar.svg" alt="calendar"/></Link>
             </div>
@@ -155,13 +151,13 @@ function NavigationBar({ goal, updateGoal}) {
 
 function WaterLogList({ waterLogs, editLog, deleteLog }) {
     const loglist = waterLogs.map(wl => 
-        <div className="cell" key={wl.id}>
+        <div className="column is-full" key={wl.id}>
             <LogItem log={wl} editLog={editLog} deleteLog={deleteLog} />
         </div>
         )
 
     return (
-        <div className="section fixed-grid log-list">
+        <div className="section columns">
             { loglist }
         </div>
     )
@@ -187,7 +183,7 @@ function LogItem({log, editLog, deleteLog}) {
                     <div className="level-item">
                         <button className="button is-info" onClick={()=>setShowEditLog(true)}>Edit</button>
                     </div>
-                    <button className="level-item button is-danger" onClick={()=>deleteLog(log.id)}>Delete</button>
+                    <button className="level-item button is-danger" onClick={()=>deleteLog(log._id)}>Delete</button>
                 </div>
             </div>
             {showEditLog && <WaterLogModal 
@@ -198,30 +194,13 @@ function LogItem({log, editLog, deleteLog}) {
                 addOrUpdateLog={editLog}/>}
         </div>
     )
-    // return (
-    //     <div onClick={()=>setShowBubble(!showBubble)}>
-    //         <img className="cactus" src="/cactus.svg" alt="decoration"/>
-    //         <p>{log.value + log.unit}</p>
-    //         { showBubble &&
-    //             <div className="one">
-    //                 <button className="button is-info" onClick={()=>setShowEditLog(true)}>Edit</button>
-    //                 <button className="button is-danger" onClick={()=>deleteLog(log.id)}>Delete</button>
-    //             </div> 
-    //         }
-    //         {showEditLog && <WaterLogModal 
-    //             showModal={showEditLog} 
-    //             setShowModal={setShowEditLog}
-    //             waterLog={log}
-    //             unit={log.unit}
-    //             addOrUpdateLog={editLog}/>}
-    //     </div>
-    // )
 }
 
 
 function WaterLogModal({ showModal, setShowModal, waterLog, unit, addOrUpdateLog}) {
 
-    const [data, setData] = useState(waterLog);
+    const [data, setData] = useState({id: waterLog._id, value: waterLog.value, unit: waterLog.unit});
+    console.log("water log modal, water log: ", data);
 
     function handleInputChange(e) {
         var newValue = e.target.value;
@@ -240,6 +219,7 @@ function WaterLogModal({ showModal, setShowModal, waterLog, unit, addOrUpdateLog
     }
 
     function handleSubmit(data) {
+        console.log("update log data: ", data);
         addOrUpdateLog(data);
         setShowModal(false);
     }
