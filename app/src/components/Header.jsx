@@ -1,7 +1,8 @@
 import "../css/Header.css";
 import { Link, NavLink } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useLocation } from 'react-router-dom'; 
+import UserContext from '../components/UserContext';
 
 function Header() {
     const [isNarrow, setIsNarrow] = useState(false);
@@ -68,7 +69,6 @@ function MenuNav() {
     const {pathname} = useLocation();
 
     useEffect(() => {
-        console.log(pathname);
         if (pathname.startsWith("/water")) {
             setSelected("water");
         } else if (pathname.startsWith("/weight")) {
@@ -134,26 +134,25 @@ function DropdownNav() {
 }
 
 function UserInfo() {
-    const [avtarUrl, setAvtarUrl] = useState("");
-
-    useEffect( () => {
-        setAvtarUrl("https://avatars.githubusercontent.com/u/35808021?v=4");
-        return () => {}
-        }, []
-    )
+    const userinfo = useContext(UserContext);
+    const username = userinfo ? userinfo.userDetails : "";
+    const avtarUrl = userinfo ? "" : "";
 
     function login() {
-        setAvtarUrl("https://avatars.githubusercontent.com/u/35808021?v=4");
+        window.location.href = "/.auth/login/github";
+        // setAvtarUrl("https://avatars.githubusercontent.com/u/35808021?v=4");
     }
 
     function logout() {
-        setAvtarUrl("");
+        window.location.href = "/.auth/logout";
     }
 
+    console.log("username is ", username);
     return (
         <div className="user-info">
             {avtarUrl && <img className="avatar" src={avtarUrl} alt="avatar"/>}
-            {avtarUrl ? 
+            {username && <p className="username">{username}</p>}
+            {username ? 
                 <button className="button is-primay" onClick={logout}>Log Out</button> : 
                 <button className="button is-primay" onClick={login}>Log In</button>}
         </div>

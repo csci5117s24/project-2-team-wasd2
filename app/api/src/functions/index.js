@@ -1,5 +1,6 @@
 const { app } = require('@azure/functions');
 const { MongoClient, ObjectID} = require('mongodb');
+const { FindByIDFromMongo, UpdateMongo, DeleteFromMongo } = require('../../common/mongo');
 
 app.http('ping', {
     methods: ['GET'],
@@ -14,37 +15,15 @@ app.http('ping', {
     }
 })
 
-// water apis
-// Water (maybe add a field for date)
-// GET /waterlog (all water logs) 
-// GET /water/id (water log for specific day)
-// POST /water/goal (set water goal)
-// PUT /water/goal (edit water goal)
-// POST /water/id (post log for the day)
-// intake
-// date
-// PUT /water/id (edit log for the day)
-// change either
 
 async function authenticate(request) {
-    const auth_header = request.headers["X-MS-CLIENT-PRINCIPAL"];
+    const auth_header = request.headers.get("X-MS-CLIENT-PRINCIPAL");
     let token = null; 
     if (auth_header) {
         token = JSON.parse(Buffer.from(auth_header, 'base64').toString());
         console.log(token); 
     }
-    
-    if (!token) {
-        return {
-            status: 401, 
-            jsonBody: {
-                message: "Unauthorized"
-            }
-        }
-    }
-
     return token;
-
 }
 
 
@@ -55,6 +34,11 @@ app.http('getWaterLogs', {
     handler: async (request, context) => {
         // take care of auth
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId; 
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const waterlog = await client.db("tracker").collection("water").find({userId: userId}).toArray();
@@ -76,6 +60,11 @@ app.http('getWorkoutLogs', {
     handler: async (request, context) => {
         // take care of auth
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId; 
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const workoutlog = await client.db("tracker").collection("workout").find({userId: userId}).toArray();
@@ -118,6 +107,11 @@ app.http('getWeightLogs', {
     handler: async (request, context) => {
         // take care of auth
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId; 
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const weightlog = await client.db("tracker").collection("weight").find({userId: userId}).toArray();
@@ -137,6 +131,11 @@ app.http('getWeightLog', {
     route: "weight/{id}",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
         const id = request.params.id;
 
@@ -175,6 +174,11 @@ app.http('getWaterLog', {
     route: "water/{id}",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
         const id = request.params.id;
 
@@ -214,6 +218,11 @@ app.http('postWeightGoal', {
     route: "weight/goal",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
         const goal = request.body ?? {}; // need to figure out what the frontend body looks like to create payload
 
@@ -235,12 +244,58 @@ app.http('postWaterGoal', {
     route: "water/goal",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
-        const goal = request.body ?? {}; // need to figure out what the frontend body looks like to create payload
+        const goal = await request.json();
+        // const goal = request.body ?? {}; // need to figure out what the frontend body looks like to create payload
+        console.log(goal);
+        if (!goal || !goal.value || !goal.unit) {
+            return {
+                status: 400,
+                jsonBody: {message: "invalid parameter"}
+            }
+        }
 
-        const payload = {userId, goal};
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const result = await client.db("tracker").collection("water").insertOne(payload);
+        const existingGoal = await client.db("tracker").collection("water_goal").findOne({userId: userId});
+        if (existingGoal) {
+            const result = await client.db("tracker").collection("water_goal").updateOne({userId: userId}, {$set: {value: goal.value, unit: goal.unit}});
+        } else {
+            const payload = {
+                userId: userId, 
+                value: goal.value,
+                unit: goal.unit,
+            };
+            const result = await client.db("tracker").collection("water_goal").insertOne(payload);
+        }
+        
+        client.close();
+
+        return {
+            status: 200, 
+            jsonBody: {goal: goal}
+        }
+    }
+})
+
+app.http('getWaterGoal', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "water/goal",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
+        const userId = token.userId;
+        const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
+        const goal = await client.db("tracker").collection("water_goal").findOne({userId: userId});
         client.close();
 
         return {
@@ -256,12 +311,17 @@ app.http('putWaterGoal', {
     route: "water/goal",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
         const goal = request.body ?? {}; // need to figure out what the frontend body looks like to create payload
 
         const payload = {userId, goal};
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const result = await client.db("tracker").collection("water").updateOne({userId: userId}, {$set: {goal: goal}});
+        const result = await client.db("tracker").collection("water_goal").updateOne({userId: userId}, {$set: {goal: goal}});
         client.close();
 
         return {
@@ -279,6 +339,11 @@ app.http('postWeightLog', {
     route: "weight",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
         const weight = request.body.weight ?? 0;
         const unit = request.body.unit ?? "kg"; 
@@ -303,6 +368,11 @@ app.http('postWorkoutLog', {
     route: "workout",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
         const title = request.body.title ?? 0;
         const description = request.body.description ?? "none"; 
@@ -328,19 +398,32 @@ app.http('postWaterLog', {
     route: "water",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
-        const intake = request.body.intake ?? 0;
-        const unit = request.body.unit ?? "oz";  // we in the americas RAHHH
-        const date = new Date();
+        const data = await request.json();
+        if (!data || !data.value || !data.unit) {
+            return {
+                status: 400,
+            }
+        }
 
-        const payload = {userId, intake, date, unit};
+        const playload = {
+            userId: userId,
+            value: data.value,
+            unit: data.unit,
+            createTime: Date.now(),
+        }
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const result = await client.db("tracker").collection("water").insertOne(payload);
+        const result = await client.db("tracker").collection("water").insertOne(playload);
         client.close();
 
         return {
             status: 200, 
-            jsonBody: {intake: intake, unit: unit, date: date}
+            jsonBody: {id: result.insertedId}
         }
     }
 })
@@ -348,40 +431,68 @@ app.http('postWaterLog', {
 app.http('putWaterLog', {
     methods: ["PUT"], 
     authLevel: "anonymous",
-    route: "water/{id}",
+    route: "water",
     handler: async (request, context) => {
         const token = await authenticate(request);
-        const userId = token.userId;
-        const id = request.params.id;
-        const intake = request.body.intake ?? 0;
-        const unit = request.body.unit ?? "oz";  // we in the americas RAHHH
-        const date = new Date();
-
-        if (ObjectID.isValid(id)) {
-            const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-            const result = await client.db("tracker").collection("water").updateOne({userId: userId, _id: new ObjectID(id)}, {$set: intake, date, unit});
-            client.close();
-
-            if (result.matchedCount === 0) {
-                return {
-                    status: 404, 
-                    jsonBody: {
-                        message: "water log not found"
-                    }
-                }
-            } else {
-                return {
-                    status: 200, 
-                    jsonBody: {intake: intake, unit: unit, date: date}
-                }
-            }
-        } else {
+        if (!token) {
             return {
-                status: 404, 
-                jsonBody: {
-                    message: "invalid id for water log"
-                }
+                status: 401
             }
+        }
+        const userId = token.userId;
+        const data = await request.json();
+        if (!data || !data.id || !data.value || !data.unit) {
+            console.log("invalid parameter");
+            return {
+                status: 400,
+            }
+        }
+        const id = data.id;
+
+        const waterLog = await FindByIDFromMongo("water", id);
+        console.log("find waterlog: ", waterLog);
+        if (!waterLog || waterLog.userId !== userId) {
+            return {
+                status: 400,
+            }
+        }
+        await UpdateMongo("water", id, {"value": data.value, "unit": data.unit});
+        return {
+            status: 200, 
+            jsonBody: {id: id, value: data.value, unit: data.unit}
+        }
+    }
+})
+
+app.http('deleteWaterLog', {
+    methods: ["DELETE"], 
+    authLevel: "anonymous",
+    route: "water",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
+        const userId = token.userId;
+        const data = await request.json();
+        if (!data || !data.id) {
+            return {
+                status: 400
+            }
+        }
+        const id = data.id;
+        const waterLog = await FindByIDFromMongo("water", id);
+        if (!waterLog || waterLog.userId !== userId) {
+            return {
+                status: 400,
+            }
+        }
+        await DeleteFromMongo("water", id);
+        return {
+            status: 200, 
+            jsonBody: {}
         }
     }
 })
@@ -393,6 +504,11 @@ app.http('putWorkoutLog', {
     route: "workout/{id}",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
         const id = request.params.id;
         const title = request.body.title;
@@ -426,12 +542,18 @@ app.http('putWorkoutLog', {
         }
     }
 })
+
 app.http('putWeightLog', {
     methods: ["PUT"], 
     authLevel: "anonymous",
     route: "weight/{id}",
     handler: async (request, context) => {
         const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
         const userId = token.userId;
         const id = request.params.id;
         const weight = request.body.weight ?? 0;
