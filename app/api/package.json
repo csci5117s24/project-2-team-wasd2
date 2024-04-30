@@ -5,7 +5,8 @@
   "main": "./src/functions/index.js",
   "scripts": {
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "echo \"No tests yet...\"",
+    "web": "npx @azure/static-web-apps-cli start http://localhost:3000 --run 'npm start' --api-location ./api" 
   },
   "dependencies": {
     "@azure/functions": "^4.3.0",
