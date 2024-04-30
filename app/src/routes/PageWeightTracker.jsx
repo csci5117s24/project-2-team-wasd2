@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
-import PageContainer from "../components/PageContainer";
 import { weightGoal, weightDeadline, weightLogList, UpdateWeightGoal, UpdateWeightLogList } from "../common/mock_data";
 import { InputWithTwoUnits } from '../components/InputWithTwoUnits';
+import PageContainer from "../components/PageContainer";
 import '../css/PageWeight.css'
+
+import CloudinaryUploadWidget from "../components/CloudinaryUploadWidget";
+import { Cloudinary } from "@cloudinary/url-gen";
+import { AdvancedImage, responsive, placeholder } from "@cloudinary/react";
+
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import annotationPlugin from 'chartjs-plugin-annotation';
-
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables, annotationPlugin);
 
@@ -22,6 +26,7 @@ export const WeightTrackerRoute = {
 }
 
 const kgToLbsCoefficient = 2.20462;
+const cloudinaryURL = "https://res.cloudinary.com/hzxyensd5/image/upload/v1714500953/"
 
 export function PageWeightTracker() {
     const [goal, setGoal] = useState({});
@@ -99,63 +104,7 @@ export function PageWeightTracker() {
         </div>
     )
 }
-//            <NavigationBar goal={goal} updateGoal={updateGoal}/>
-/*
-function NavigationBar({ goal, updateGoal}) {
-    
-    const [editGoal, setEditGoal] = useState(false);
 
-    function enableEditGoal() {
-        setEditGoal(true);
-    }
-
-    function handleGoalChange(e) {
-        var newValue = e.target.value;
-        if (newValue) {
-            newValue = parseInt(newValue);
-            if (isNaN(newValue)) {
-                alert("invalid value!");
-                return
-            }
-        }
-        updateGoal({
-            value: newValue,
-            unit: goal.unit,
-        }, false);
-    }
-
-    function confirmEditGoal() {
-        updateGoal(goal, true);
-        setEditGoal(false);
-    }
-
-    return (
-        <div className="level">
-            <div className="level-left">
-                <div className="level-item">
-                    <img className="icon" src="/water_drop.svg" alt="icon"></img>
-                </div>
-                <div className="level-item">
-                    <input type="text" 
-                    value={goal.value} disabled={!editGoal}
-                    onChange={e=>handleGoalChange(e)}
-                    /> <span>{goal.unit}</span>
-                </div>
-                <div className="level-item">
-                    { !editGoal 
-                    ? <img className="icon" src="/edit_fill.svg" alt="edit" onClick={enableEditGoal}></img>
-                    : <button onClick={confirmEditGoal}>Confirm</button>}
-                </div>
-            </div>
-            <div className="level-right">
-                <div className="level-item">
-                    <Link to="/weight/calendar"><img className="icon" src="/calendar.svg" alt="calendar"/></Link>
-                </div>
-            </div>
-        </div>
-    )
-}
-*/
 function WeightLogList({ weightLogs, editLog, deleteLog }) {
     const loglist = weightLogs.map(wl => 
         <div className="cell" key={wl.timestamp}>
@@ -177,7 +126,7 @@ function LogItem({log, editLog, deleteLog}) {
 
     return (
         <div onClick={()=>setShowBubble(!showBubble)}>
-            <img className="cactus" src={log.picture} alt="Uploaded content"/>
+            <img className="cactus" src={cloudinaryURL + log.picture} alt="Uploaded content"/>
             <p>{log.value + log.unit}</p>
             { showBubble &&
                 <div className="one">
@@ -199,6 +148,39 @@ function LogItem({log, editLog, deleteLog}) {
 function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateLog}) {
 	const [data, setData] = useState(weightLog ? weightLog: {value: 0, unit:"kg"});
 	const [picture, setPicture] = useState(weightLog && weightLog.picture);
+
+	/* 
+	==================================================================
+	Credit to team Ajay, I this Cloudinary setup code from their tech share
+	https://github.com/csci5117s24/Ajay-cloudinary-tech-share
+	==================================================================
+	*/
+	const [publicId, setPublicId] = useState("");
+	// Replace with your own cloud name
+	const [cloudName] = useState("dtjacou0b");
+	// Replace with your own upload preset
+	const [uploadPreset] = useState("aoh4fpwm");
+
+	const [uwConfig] = useState({
+		cloudName,
+		uploadPreset,
+		multiple: false,  //restrict upload to a single file
+		folder: "weight_images",
+		context: {alt: "user_uploaded"},
+		clientAllowedFormats: ["image"],
+		maxImageFileSize: 2000000,
+		maxImageWidth: 2000,
+		maxImageHeight: 2000,
+	});
+
+	const cld = new Cloudinary({
+		cloud: {
+		  cloudName
+		}
+	});
+
+	const myImage = cld.image(publicId || picture);
+	// END of team Ajay credits
 
     function handleInputChange(e) {
         var newValue = e.value ? e.value: 0;
@@ -248,21 +230,27 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
                     <p className="modal-card-title">{weightLog ? "Edit Weight Log" : "New Weight Log"}</p>
                     <button className="delete" aria-label="close" onClick={() => setShowModal(false)}></button>
                 </header>
-                <section className="modal-card-body">
+                <section className="weight-modal modal-card-body">
 					<InputWithTwoUnits 
-						title="Enter your current weight:"
+						title="Current Weight:"
 						units={["kg", "lbs"]} 
 						coefs={[1.0/kgToLbsCoefficient, kgToLbsCoefficient]}
 						data={data}
 						handleInputChange={setData}/>
 					<br/>
 					<p>Upload a picture:</p>
-					<input type="file" accept="image/*" onChange={e => handleImageChange(e)}></input>
-					{picture && <img class='picture-preview' src={picture} alt="Uploaded" />}
+					<CloudinaryUploadWidget uwConfig={uwConfig} setPublicId={setPublicId} />
+					<div style={{ maxWidth: "40%" }}>
+						<AdvancedImage
+						style={{ maxWidth: "100%" }}
+						cldImg={myImage}
+						plugins={[responsive(), placeholder()]}
+						/>
+					</div>
                 </section>
                 <footer className="modal-card-foot">
                 <div className="buttons">
-                    <button className="button is-success" onClick={() => handleSubmit(data, picture)}>Submit</button>
+                    <button className="button is-success" onClick={() => handleSubmit(data, publicId)}>Submit</button>
                 </div>
                 </footer>
             </div>

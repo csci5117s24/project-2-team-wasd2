@@ -22,19 +22,19 @@ export var weightLogList = [
     {
         "value": 100,
         "unit": "kg",
-        "picture": "/delete_these_pictures_later/Heavy_weight.png",
+        "picture": "weight_images/rigfsq7nzzaw4rtmuz3z",
         "timestamp": 1713202337616
     },
     {
         "value": 95,
         "unit": "kg",
-        "picture": "/delete_these_pictures_later/Middle_weight.png",
+        "picture": "weight_images/rigfsq7nzzaw4rtmuz3z",
         "timestamp": 1713301337616
     },
     {
         "value": 92,
         "unit": "kg",
-        "picture": "/delete_these_pictures_later/Light_weight.png",
+        "picture": "weight_images/rigfsq7nzzaw4rtmuz3z",
         "timestamp": 1713400348865
     }
 ];
