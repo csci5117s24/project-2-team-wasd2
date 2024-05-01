@@ -55,10 +55,6 @@ export function PageWeightTracker() {
     }
 
     function editLog(data, picture) {
-		console.log("log list")
-		console.log(weightLogList)
-		console.log("editLog data")
-		console.log(data)
         var idx = weightLogList.findIndex(nl => nl.timestamp === data.timestamp);
 		if (data.value) {
 			weightLogList[idx].value = data.value;
@@ -151,8 +147,6 @@ function LogItem({log, editLog, deleteLog}) {
 
 function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateLog}) {
 	const [data, setData] = useState(weightLog ? weightLog: {value: 0, unit:"kg"});
-	console.log("modal data")
-	console.log(data)
 
 	/*
 	==================================================================
@@ -187,27 +181,24 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
 	// END of team Ajay credits
 
     function handleInputChange(e) {
-        var newValue = e.value ? e.value: 0;
-        if (newValue) {
-            newValue = parseInt(newValue);
+		let newData = {...data}
+
+        if (e.value) {
+            let newValue = parseFloat(e.value);
             if (isNaN(newValue)) {
                 alert("invalid value!");
                 return
             }
+			newData.value = newValue;
         }
-		let newData = {...data}
-		newData.value = newValue;
-		newData.unit = unit
-		console.log("new data")
-		console.log(newData)
+
+		if (e.unit){
+			newData.unit = e.unit
+		}
         setData(newData);
     }
 
     function handleSubmit(data, picture) {
-		console.log('data')
-		console.log(data)
-		console.log('picture')
-		console.log(picture)
 		if (picture){
 			addOrUpdateLog(data, picture);
 		} else {

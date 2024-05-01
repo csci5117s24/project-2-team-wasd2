@@ -33,6 +33,7 @@ function CloudinaryUploadWidget({ uwConfig, setPublicId }) {
   }, [loaded]);
 
   const initializeCloudinaryWidget = () => {
+	console.log(loaded);
     if (loaded) {
       var myWidget = window.cloudinary.createUploadWidget(
         uwConfig,
@@ -43,14 +44,8 @@ function CloudinaryUploadWidget({ uwConfig, setPublicId }) {
           }
         }
       );
-
-      document.getElementById("upload_widget").addEventListener(
-        "click",
-        function () {
-          myWidget.open();
-        },
-        false
-      );
+	  
+	  myWidget.open(); 
     }
   };
 
