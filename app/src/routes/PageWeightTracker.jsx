@@ -26,7 +26,7 @@ export const WeightTrackerRoute = {
 }
 
 const kgToLbsCoefficient = 2.20462;
-const cloudinaryURL = "https://res.cloudinary.com/hzxyensd5/image/upload/v1714500953/"
+const cloudinaryURL = "https://res.cloudinary.com/dtjacou0b/image/upload/v1714500953/"
 
 export function PageWeightTracker() {
     const [goal, setGoal] = useState({});
@@ -159,7 +159,7 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
 	// Replace with your own cloud name
 	const [cloudName] = useState("dtjacou0b");
 	// Replace with your own upload preset
-	const [uploadPreset] = useState("aoh4fpwm");
+	const [uploadPreset] = useState("o9lheqnh");
 
 	const [uwConfig] = useState({
 		cloudName,
