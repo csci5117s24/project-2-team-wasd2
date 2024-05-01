@@ -28,7 +28,7 @@ export var weightLogList = [
     {
         "value": 95,
         "unit": "kg",
-        "picture": "weight_images/yfccv6acbg6pee8gsu4s",
+        "picture": "weight_images/k8i8lvx90iqp4rjemkkz",
         "timestamp": 1713301337616
     },
     {

@@ -55,6 +55,10 @@ export function PageWeightTracker() {
     }
 
     function editLog(data, picture) {
+		console.log("log list")
+		console.log(weightLogList)
+		console.log("editLog data")
+		console.log(data)
         var idx = weightLogList.findIndex(nl => nl.timestamp === data.timestamp);
 		if (data.value) {
 			weightLogList[idx].value = data.value;
@@ -125,7 +129,7 @@ function LogItem({log, editLog, deleteLog}) {
     const [showEditLog, setShowEditLog] = useState(false);
 
     return (
-        <div onClick={()=>setShowBubble(!showBubble)}>
+        <div className="weightLogItem" onClick={()=>setShowBubble(!showBubble)}>
             <img className="cactus" src={cloudinaryURL + log.picture} alt="Uploaded content"/>
             <p>{log.value + log.unit}</p>
             { showBubble &&
@@ -147,30 +151,30 @@ function LogItem({log, editLog, deleteLog}) {
 
 function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateLog}) {
 	const [data, setData] = useState(weightLog ? weightLog: {value: 0, unit:"kg"});
-	const [picture, setPicture] = useState(weightLog && weightLog.picture);
+	console.log("modal data")
+	console.log(data)
 
-	/* 
+	/*
 	==================================================================
 	Credit to team Ajay, I this Cloudinary setup code from their tech share
 	https://github.com/csci5117s24/Ajay-cloudinary-tech-share
 	==================================================================
 	*/
-	const [publicId, setPublicId] = useState("");
-	// Replace with your own cloud name
+	const [publicId, setPublicId] = useState(weightLog && weightLog.picture);
 	const [cloudName] = useState("dtjacou0b");
-	// Replace with your own upload preset
 	const [uploadPreset] = useState("o9lheqnh");
 
 	const [uwConfig] = useState({
 		cloudName,
 		uploadPreset,
-		multiple: false,  //restrict upload to a single file
+		multiple: false,
 		folder: "weight_images",
 		context: {alt: "user_uploaded"},
 		clientAllowedFormats: ["image"],
 		maxImageFileSize: 2000000,
 		maxImageWidth: 2000,
 		maxImageHeight: 2000,
+		sources: ["local", "camera"]
 	});
 
 	const cld = new Cloudinary({
@@ -179,7 +183,7 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
 		}
 	});
 
-	const myImage = cld.image(publicId || picture);
+	const myImage = cld.image(publicId);
 	// END of team Ajay credits
 
     function handleInputChange(e) {
@@ -191,34 +195,28 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
                 return
             }
         }
-        setData({
-            id: data ? data.timestamp : 0,
-            value: newValue,
-            unit: unit,
-        });
+		let newData = {...data}
+		newData.value = newValue;
+		newData.unit = unit
+		console.log("new data")
+		console.log(newData)
+        setData(newData);
     }
 
     function handleSubmit(data, picture) {
+		console.log('data')
+		console.log(data)
+		console.log('picture')
+		console.log(picture)
 		if (picture){
 			addOrUpdateLog(data, picture);
 		} else {
-			addOrUpdateLog(data, "/cactus.svg");
+			addOrUpdateLog(data, "weight_images/yfccv6acbg6pee8gsu4s");
 		}
 		setShowModal(false);
     }
 
-	function handleImageChange(e) {
-		const file = e.target.files[0];
-		if (file) {
-		  const reader = new FileReader();
-		  reader.onloadend = () => {
-			setPicture(reader.result);
-		  };
-		  reader.readAsDataURL(file);
-		} else {
-		  setPicture('');
-		}
-	  };
+
 
     const className = showModal ? "modal is-active" : "modal";
 
@@ -236,11 +234,11 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
 						units={["kg", "lbs"]} 
 						coefs={[1.0/kgToLbsCoefficient, kgToLbsCoefficient]}
 						data={data}
-						handleInputChange={setData}/>
+						handleInputChange={handleInputChange}/>
 					<br/>
 					<p>Upload a picture:</p>
 					<CloudinaryUploadWidget uwConfig={uwConfig} setPublicId={setPublicId} />
-					<div style={{ maxWidth: "40%" }}>
+					<div style={{ maxWidth: "40%", display: "flex", marginLeft: "30%", marginTop: "15px"}}>
 						<AdvancedImage
 						style={{ maxWidth: "100%" }}
 						cldImg={myImage}
