@@ -40,7 +40,7 @@
     margin-left: auto;
 }
 
-/* .modal {
-    width: 10rem;
-    height: 5rem;
-} */
+.log-list-container {
+    display: flex;
+    flex-direction: column;
+}
