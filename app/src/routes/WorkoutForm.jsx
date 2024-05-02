@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from '../css/WorkoutForm.module.css';
 import PageContainer from "../components/PageContainer";
-
+import WorkoutList from './WorkoutList'; // Importing the new WorkoutList component
 
 export const WorkOutFormRoute = {
     path: "/exercise",
@@ -12,11 +12,10 @@ export const WorkOutFormRoute = {
             element: <WorkoutForm/>
         }
     ]
-  }
-  export const MainpageWorkoutFormRoute = {
+}
+export const MainpageWorkoutFormRoute = {
     path: "/",
     element: <WorkoutForm/>,
-
 }
 
 export function WorkoutForm() {
@@ -31,15 +30,29 @@ export function WorkoutForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const newWorkout = { title, description, calories: parseInt(calories, 10) };
+        const newWorkout = { 
+            id: workouts.length + 1, 
+            title, 
+            description, 
+            calories: parseInt(calories, 10),
+            count: 0  
+        };
         setWorkouts([...workouts, newWorkout]);
         setTitle('');
         setDescription('');
         setCalories(0);
     };
-
-    const handleAddToGoal = (workoutCalories) => {
-        setCalorieGoal(currentGoal => Math.max(0, currentGoal - workoutCalories));
+    const handleAddToGoal = (workoutId) => {
+        const workout = workouts.find(w => w.id === workoutId);
+        if (workout) {
+            setCalorieGoal(currentGoal => Math.max(0, currentGoal - workout.calories));
+            setWorkouts(currentWorkouts => currentWorkouts.map(w => {
+                if (w.id === workoutId) {
+                    return { ...w, count: (w.count || 0) + 1 };
+                }
+                return w;
+            }));
+        }
     };
 
     const handleSave = () => {
@@ -48,24 +61,25 @@ export function WorkoutForm() {
     };
 
     return (
+        <>
+        <h2>Add Workout</h2>
         <div className={styles.container}>
             {/* Calorie Goal */}
-            <div>
+            <div className = {styles.editContainer}>
                 {editMode ? (
                     <>
                         <input type="number" value={newGoal} onChange={e => setNewGoal(parseInt(e.target.value, 10))} />
-                        <button onClick={handleSave}>Save</button>
+                        <button className= {styles.saveButton} onClick={handleSave}>Save</button>
                     </>
                 ) : (
                     <>
                         <h2>Calorie Goal: {calorieGoal}</h2>
-                        <button onClick={() => setEditMode(true)}>Edit</button>
+                        <button className= {styles.editButton} onClick={() => setEditMode(true)}>edit</button>
                     </>
                 )}
             </div>
 
             {/* Workout Form */}
-            <h2>Add Workout</h2>
             <form onSubmit={handleSubmit}>
                 <input type="text" className={styles.formInput} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Workout Title" />
                 <textarea className={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
@@ -73,19 +87,13 @@ export function WorkoutForm() {
                 <button type="submit" className={styles.formButton}>Add Workout</button>
             </form>
 
-            {/* List of Workouts */}
-            <div className={styles.workoutList}>
-                <h2>Workouts List</h2>
-                {workouts.map((workout, index) => (
-                    <div key={index} className={styles.workoutItem}>
-                        <h3>{workout.title}</h3>
-                        <p>{workout.description}</p>
-                        <p>Calories: {workout.calories}</p>
-                        <button onClick={() => handleAddToGoal(workout.calories)}>Add to Goal</button>
-                    </div>
-                ))}
-            </div>
+            {/* List of Workouts */}      
         </div>
+         <div className={styles.listSection}>
+            <WorkoutList workouts={workouts} handleAddToGoal={handleAddToGoal} />
+        </div>  
+     </>
+     
     );
 }
 
