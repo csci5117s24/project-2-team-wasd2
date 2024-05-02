@@ -10,16 +10,14 @@ import {
 
 import { WaterGoalRoute } from './routes/PageWaterGoal';
 import { WaterTrackerRoute } from './routes/PageWaterTracker';
-import { MainpageWaterCalendarRoute, WaterCalendarRoute } from './routes/PageWaterCalendar';
+import { WaterCalendarRoute } from './routes/PageWaterCalendar';
 
 import { WeightGoalRoute } from './routes/PageWeightGoal';
 import { WeightTrackerRoute } from './routes/PageWeightTracker';
 
 import { Chart, registerables} from 'chart.js';
-import {MainpageWorkoutFormRoute, WorkOutFormRoute} from './routes/WorkoutForm';
-import { MainpageWaterRoute } from './routes/PageMainpageWater';
-import { MainpageWorkoutRoute } from './routes/PageMainpageWorkout';
-import { MainpageBodyRoute } from './routes/PageMainpageBody';
+import { WorkOutFormRoute} from './routes/WorkoutForm';
+import { MainpageRoute } from './routes/PageMain';
 import {WorkoutCalendarRoute} from './routes/WorkoutChart'
 
 Chart.register(...registerables); // register char.js
@@ -32,15 +30,11 @@ const router = createBrowserRouter([
     children: [
       WaterGoalRoute,
       WaterTrackerRoute,
-      WaterCalendarRoute,
+      WorkoutCalendarRoute,
 	    WeightGoalRoute,
 	    WeightTrackerRoute,
       WorkOutFormRoute,
-      MainpageBodyRoute,
-      WorkoutCalendarRoute
-      // MainpageWaterRoute,
-      // MainpageWorkoutRoute,
-      // MainpageWorkoutFormRoute
+      MainpageRoute
     ]
   },
 ]);

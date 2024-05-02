@@ -61,8 +61,11 @@ export function WorkoutForm() {
     };
 
     return (
-        <>
-        <h2>Add Workout</h2>
+        <div>
+            <div className="motto-container">
+                <p className="motto">Strength for Life: Embrace Fitness, Choose Wellness!</p>
+                <img src="/quote-right.svg" alt="quote"></img>
+            </div>
         <div className={styles.container}>
             {/* Calorie Goal */}
             <div className = {styles.editContainer}>
@@ -78,8 +81,10 @@ export function WorkoutForm() {
                     </>
                 )}
             </div>
+        </div>
 
             {/* Workout Form */}
+            <h1>Log Workouts here:</h1>
             <form onSubmit={handleSubmit}>
                 <input type="text" className={styles.formInput} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Workout Title" />
                 <textarea className={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
@@ -87,12 +92,22 @@ export function WorkoutForm() {
                 <button type="submit" className={styles.formButton}>Add Workout</button>
             </form>
 
-            {/* List of Workouts */}      
-        </div>
+            {/* List of Workouts */}
+            {/* <div className={styles.workoutList}>
+                <h2>Workouts List</h2>
+                {workouts.map((workout, index) => (
+                    <div key={index} className={styles.workoutItem}>
+                        <h3>{workout.title}</h3>
+                        <p>{workout.description}</p>
+                        <p>Calories: {workout.calories}</p>
+                        <button onClick={() => handleAddToGoal(workout.calories)}>Add to Goal</button>
+                    </div>
+                ))}
+            </div> */}
          <div className={styles.listSection}>
             <WorkoutList workouts={workouts} handleAddToGoal={handleAddToGoal} />
-        </div>  
-     </>
+        </div>
+    </div>  
      
     );
 }

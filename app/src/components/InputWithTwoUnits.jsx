@@ -38,13 +38,11 @@ export function InputWithTwoUnits({ title, units, coefs, data, handleInputChange
     return(
         <div className="card level input-card">
             <div className="level-left">
-                <div className="level-item">
                     <p>{title}</p>
-                </div>
             </div>
             <div className="level-right">
                 <div className="level-item">
-                    <input type="text" value={data.value} onChange={e=>handleValueChange(e)}></input>
+                    <input className="input" type="text" value={data.value} onChange={e=>handleValueChange(e)}></input>
                 </div>
                 <div className="level-item">
                     <span className={unit===units[0] ? "selected-span" : "clickable-span"} onClick={toFirstUnit}>{units[0]}</span> 

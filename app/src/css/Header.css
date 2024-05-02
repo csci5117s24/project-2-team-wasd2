@@ -1,10 +1,78 @@
 
-.icon {
-    width: 20px;
-    height: 20px;
+.header {
+    height: 5rem;
+    width: 100%;
+    border-bottom: 1px solid #EEEEEE;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: white;
 }
 
-.header {
-    height: 71px;
-    background-color: var(--my-purple);
+.nav {
+    display: flex;
+}
+
+.menu, .selected-menu {
+    font-weight: bold;
+    margin-left: 2rem;
+    margin-right: 2rem;
+    height: 5rem;
+    align-content: center;
+}
+
+.selected-menu {
+    border-bottom: 2px solid var(--my-orange);;
+}
+
+.menu a {
+    color: black;
+}
+
+.selected-menu a {
+    color: var(--my-orange);
+}
+
+.selected-menu a:hover {
+    color: #FF6500;
+}
+
+.logo {
+    margin: 1rem 2rem;
+    margin-left: 5rem;
+}
+
+.mobile-logo{
+   height: 1.5rem;
+   margin-left: 1rem;
+}
+
+.icon{
+    width: 2rem;
+    height: 2rem;
+}
+
+.dropdown-trigger button {
+    border: none;
+    font-size: 1.3rem;
+}
+
+.user-info {
+    display: inherit;
+    align-items: inherit;
+    margin-left: auto;
+    margin-right: 2rem;
+}
+
+.avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    margin-right: 1rem;
+}
+
+.username {
+    margin-right: 1rem;
 }

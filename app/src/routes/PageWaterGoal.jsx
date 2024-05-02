@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageContainer from "../components/PageContainer";
 import { keepTwoDecimal } from "../common/utils";
-import { UpdateWaterGoal } from "../common/mock_data";
 import { InputWithTwoUnits } from '../components/InputWithTwoUnits';
+import { SendGet, SendPost } from "../common/http";
 
 
 export const WaterGoalRoute = {
@@ -16,10 +16,18 @@ export const WaterGoalRoute = {
     ]
 }
 
-
 const cmToInCoefficient = 0.3937007874;
 const kgToLbsCoefficient = 2.20462;
 const ozToMlCoefficient = 29.5735;
+
+async function getWaterGoal() {
+    const goal = await SendGet("/api/water/goal", {});
+    return goal.goal;
+}
+
+async function updateWaterGoal(goal) {
+    await SendPost("/api/water/goal", goal);
+}
 
 
 function PageWaterGoal() {
@@ -35,12 +43,24 @@ function PageWaterGoal() {
     }
 
     async function setWaterGoal() {
-        UpdateWaterGoal(goal.value);
+        await updateWaterGoal(goal);
+        window.location.href = "/water";
     }
+
+    useEffect(()=> {
+        async function fetchGoal() {
+            const myGoal = await getWaterGoal();
+            if (myGoal) {
+                setGoal({value: myGoal.value, unit: myGoal.unit});
+            }
+        }
+        fetchGoal();
+    }, []
+    )
 
     return (
         <div className="container">
-            <h1 className="primary-title">See how much you need</h1>
+            <h1 className="primary-title">See how much water you need</h1>
             <InputWithTwoUnits 
                 title="Height" 
                 units={["cm", "in"]} 
@@ -60,7 +80,7 @@ function PageWaterGoal() {
             <div className="goal-container">
                 <h1 className="secondary-title">suggested daily water intake</h1>
                 <WaterIntakeGoal data={goal} handleGoalChange={setGoal}/>
-                <button className="button is-primary" onClick={setWaterGoal}>set as goal</button>
+                <button className="button is-primary" onClick={setWaterGoal}>Set as Goal</button>
             </div>
             }
         </div>

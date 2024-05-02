@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageContainer from "../components/PageContainer";
-import { UpdateWaterGoal, UpdateWaterLogList, WaterGoal, waterLogList } from "../common/mock_data";
+import LiquidGuage from "../components/LiquidGauge";
+import styles from '../css/WorkoutForm.module.css';
+import { SendDelete, SendGet, SendUpdate, SendPost } from "../common/http";
+import { toISODateStr } from "../common/utils";
 
 export const WaterTrackerRoute = {
     path: "/water",
@@ -14,26 +17,53 @@ export const WaterTrackerRoute = {
     ]
 }
 
+async function getWaterGoal() {
+    const goal = await SendGet("/api/water/goal", {});
+    return goal.goal;
+}
+
+async function newWaterLog(value, unit) {
+    // const timezoneOffset = new Date().getTimezoneOffset();
+    const res = await SendPost("/api/water", {value: value, unit: unit});
+    return res.id;
+}
+
+async function getWaterLogs() {
+    const today = new Date();
+    const logs = await SendGet("/api/waterlog", {date: today.toLocaleDateString()});
+    return logs.waterlog;
+}
+
+async function updateWaterLog(id, value, unit) {
+    console.log("update water log. id: ", id);
+    await SendUpdate("/api/water" , {id: id, value: value, unit: unit});
+}
+
+async function deleteWaterLog(id) {
+    await SendDelete("/api/water", {id: id});
+}
+
 export function PageWaterTracker() {
     const [goal, setGoal] = useState({});
     const [achieved, setAchieved] = useState(0);
     const [waterLogs, setWaterLogs] = useState([]);
-    const [showAddLog, setShowAddLog] = useState(false);
 
     useEffect(() => {
-        function fetchData() {
-            // get goal
-            var curGoal = {value: WaterGoal, unit: "ml"}
-            // get water logs
-            var curLogs = waterLogList;
-            setGoal(curGoal);
+        async function fetchData() {
+            const curGoal = await getWaterGoal();
+            if (!curGoal) {
+                window.location.href = "/water/goal";
+            }
+            const curLogs = await getWaterLogs();
+            const newAchieved = calAchieved(curLogs, curGoal);
+            setGoal({value: curGoal.value, unit: curGoal.unit});
             setWaterLogs(curLogs);
-            setAchieved(calAchieved());
+            setAchieved(newAchieved);
         }
         fetchData();
-    }, [waterLogs]);
+    }, []);
 
-    function calAchieved() {
+    function calAchieved(waterLogs, goal) {
         var total = 0;
         for (let i = 0; i < waterLogs.length; i++) {
             total += waterLogs[i].value;
@@ -41,107 +71,82 @@ export function PageWaterTracker() {
         return Math.round(total/goal.value*100);
     }
 
-    async function updateGoal(newGoal, isSubmit) {
-        if (isSubmit) {
-            UpdateWaterGoal(newGoal.value);
-            setGoal(newGoal);
-            setAchieved(calAchieved());
-        } else {
-            setGoal(newGoal);
-        }
+    async function editLog(data) {
+        updateWaterLog(data.id, data.value, data.unit);
+        const newWaterLogs = waterLogs.map((log)=>{
+            if (log._id === data.id) {
+                var updatedLog = log;
+                updatedLog.value = data.value;
+                updatedLog.unit = data.unit;
+                return updatedLog;
+            } else {
+                return log;
+            }
+        })
+        const newAchieved = calAchieved(newWaterLogs, goal);
+        setWaterLogs(newWaterLogs);
+        setAchieved(newAchieved);
     }
 
-    function editLog(data) {
-        console.log("edit log");
-        var idx = waterLogList.findIndex(nl => nl.id === data.id);
-        waterLogList[idx].value = data.value;
-        setWaterLogs(waterLogList);
-        setAchieved(calAchieved());
+    async function deleteLog(id) {
+        deleteWaterLog(id);
+        const newWaterLogs = waterLogs.filter(wl => wl._id !== id);
+        const newAchieved = calAchieved(newWaterLogs, goal);
+        setWaterLogs(newWaterLogs);
+        setAchieved(newAchieved)
     }
 
-    function deleteLog(id) {
-        console.log("delete log");
-        UpdateWaterLogList(waterLogList.filter(wl => wl.id !== id));
-        setWaterLogs(waterLogList);
-    }
-
-    async function newWaterLog(data) {
-        var newLog = {
+    async function addWaterLog(data) {
+        const logId = await newWaterLog(data.value, data.unit);
+        const newLog = {
+            _id: logId,
+            id: logId,
             value: data.value,
             unit: data.unit,
         }
-        newLog.id = Date.now();
-        waterLogList.push(newLog);
         const newLogs = [...waterLogs, newLog];
+        const newAchieved = calAchieved(newLogs, goal);
         setWaterLogs(newLogs);
+        setAchieved(newAchieved);
     }
 
     return (
         <div className="container">
-            <NavigationBar goal={goal} updateGoal={updateGoal}/>
-            <h1 className="primary-title"><span>{achieved}%</span> of your goal achieved</h1>
-            <button className="button is-primary" onClick={()=> setShowAddLog(true)}>Add Water</button>
-            {showAddLog && <WaterLogModal
-                showModal={showAddLog}
-                setShowModal={setShowAddLog}
-                waterLog={undefined} 
-                unit={goal.unit} 
-                addOrUpdateLog={newWaterLog}/>}
+            <div className="motto-container">
+                <p className="motto">Hydrate to Elevate: Fuel Your Life with H<sub>2</sub>O!</p>
+                <img src="/quote-right.svg" alt="quote"></img>
+            </div>
+            <div className={styles.container}>
+            <NavigationBar goal={goal}/>
+            <div className="columns">
+                <div className="column is-two-fifths">
+                    <LiquidGuage style={{ margin: 'auto' }}
+                            radius={75}
+                            value={achieved}/>
+                    <h1><span>{achieved}%</span> of your goal achieved</h1>
+                </div>
+                
+                <div className="column auto">
+                    <NewWaterLog unit={goal.unit} addWaterLog={addWaterLog}/>
+                </div>
+            </div>
             <WaterLogList waterLogs={waterLogs} editLog={editLog} deleteLog={deleteLog}></WaterLogList>
+            </div>
         </div>
     )
 }
 
-function NavigationBar({ goal, updateGoal}) {
-    
-    const [editGoal, setEditGoal] = useState(false);
-
-    function enableEditGoal() {
-        setEditGoal(true);
-    }
-
-    function handleGoalChange(e) {
-        var newValue = e.target.value;
-        if (newValue) {
-            newValue = parseInt(newValue);
-            if (isNaN(newValue)) {
-                alert("invalid value!");
-                return
-            }
-        }
-        updateGoal({
-            value: newValue,
-            unit: goal.unit,
-        }, false);
-    }
-
-    function confirmEditGoal() {
-        updateGoal(goal, true);
-        setEditGoal(false);
-    }
+function NavigationBar({ goal}) {
 
     return (
-        <div className="level">
-            <div className="level-left">
-                <div className="level-item">
-                    <img className="icon" src="/water_drop.svg" alt="icon"></img>
-                </div>
-                <div className="level-item">
-                    <input type="text" 
-                    value={goal.value} disabled={!editGoal}
-                    onChange={e=>handleGoalChange(e)}
-                    /> <span>{goal.unit}</span>
-                </div>
-                <div className="level-item">
-                    { !editGoal 
-                    ? <img className="icon" src="/edit_fill.svg" alt="edit" onClick={enableEditGoal}></img>
-                    : <button onClick={confirmEditGoal}>Confirm</button>}
-                </div>
-            </div>
-            <div className="level-right">
-                <div className="level-item">
-                    <Link to="/water/calendar"><img className="icon" src="/calendar.svg" alt="calendar"/></Link>
-                </div>
+        <div className="sub-nav">
+            <img className="icon" src="/target.svg" alt="icon"></img>
+            <span style={{marginLeft: '1rem', marginRight: '1rem'}}>{"" + goal.value + " " + goal.unit }</span>
+            <Link to="/water/goal">
+                <img className="functional-icon" src="/edit_fill.svg" alt="edit goal"/>
+            </Link>
+            <div className="calendar-icon">
+                <Link to="/water/calendar"><img className="icon" src="/calendar.svg" alt="calendar"/></Link>
             </div>
         </div>
     )
@@ -149,13 +154,13 @@ function NavigationBar({ goal, updateGoal}) {
 
 function WaterLogList({ waterLogs, editLog, deleteLog }) {
     const loglist = waterLogs.map(wl => 
-        <div className="cell" key={wl.id}>
+        <div key={wl.id}>
             <LogItem log={wl} editLog={editLog} deleteLog={deleteLog} />
         </div>
         )
 
     return (
-        <div className="grid">
+        <div className="section log-list-container">
             { loglist }
         </div>
     )
@@ -163,19 +168,27 @@ function WaterLogList({ waterLogs, editLog, deleteLog }) {
 
 function LogItem({log, editLog, deleteLog}) {
     
-    const [showBubble, setShowBubble] = useState(false);
+    // const [showBubble, setShowBubble] = useState(false);
     const [showEditLog, setShowEditLog] = useState(false);
 
     return (
-        <div onClick={()=>setShowBubble(!showBubble)}>
-            <img className="cactus" src="/cactus.svg" alt="decoration"/>
-            <p>{log.value + log.unit}</p>
-            { showBubble &&
-                <div className="one">
-                    <button className="button is-info" onClick={()=>setShowEditLog(true)}>Edit</button>
-                    <button className="button is-danger" onClick={()=>deleteLog(log.id)}>Delete</button>
-                </div> 
-            }
+        <div className="card waterlog-item">
+            <div className="level">
+                <div className="level-left">
+                    <div className="level-item">
+                        <img className="cactus" src="/cactus.svg" alt="decoration"/>
+                    </div>
+                    <div className="level-item">
+                        <p>{log.value + log.unit}</p>
+                    </div>
+                </div>
+                <div className="level-right">
+                    <div className="level-item">
+                        <button className="button is-info" onClick={()=>setShowEditLog(true)}>Edit</button>
+                    </div>
+                    <button className="level-item button is-danger" onClick={()=>deleteLog(log._id)}>Delete</button>
+                </div>
+            </div>
             {showEditLog && <WaterLogModal 
                 showModal={showEditLog} 
                 setShowModal={setShowEditLog}
@@ -189,7 +202,8 @@ function LogItem({log, editLog, deleteLog}) {
 
 function WaterLogModal({ showModal, setShowModal, waterLog, unit, addOrUpdateLog}) {
 
-    const [data, setData] = useState(waterLog);
+    const [data, setData] = useState({id: waterLog._id, value: waterLog.value, unit: waterLog.unit});
+    console.log("water log modal, water log: ", data);
 
     function handleInputChange(e) {
         var newValue = e.target.value;
@@ -208,6 +222,7 @@ function WaterLogModal({ showModal, setShowModal, waterLog, unit, addOrUpdateLog
     }
 
     function handleSubmit(data) {
+        console.log("update log data: ", data);
         addOrUpdateLog(data);
         setShowModal(false);
     }
@@ -232,6 +247,38 @@ function WaterLogModal({ showModal, setShowModal, waterLog, unit, addOrUpdateLog
                 </div>
                 </footer>
             </div>
+        </div>
+    )
+}
+
+function NewWaterLog({unit, addWaterLog}) {
+
+    const [value, setValue] = useState(0);
+
+    function handleInputChange(e) {
+        var newValue = e.target.value;
+        if (newValue) {
+            newValue = parseInt(newValue);
+            if (isNaN(newValue)) {
+                alert("invalid value!");
+                return
+            }
+        }
+        setValue(newValue);
+    }
+
+    function handleSubmit(value) {
+        addWaterLog({value: value, unit: unit});
+        setValue(0);
+    }
+
+    return (
+        <div>
+            <div className="new-water-input">
+                <input className="input" type="text" value={value} onChange={e => handleInputChange(e)}></input> 
+                <span>{unit}</span>
+            </div>
+            <button className="button new-water-log" onClick={() => handleSubmit(value)}>Drink More Water </button>
         </div>
     )
 }

@@ -2,13 +2,16 @@
   "name": "api",
   "version": "1.0.0",
   "description": "",
-  "main": "src/functions/*.js",
+  "main": "./src/functions/index.js",
   "scripts": {
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "echo \"No tests yet...\"",
+    "web": "npx @azure/static-web-apps-cli start http://localhost:3000 --run 'npm start' --api-location ./api"
   },
   "dependencies": {
-    "@azure/functions": "^4.0.0"
+    "@azure/functions": "^4.3.0",
+    "bson": "^6.6.0",
+    "mongodb": "^6.5.0"
   },
   "devDependencies": {
     "azure-functions-core-tools": "^4.x"

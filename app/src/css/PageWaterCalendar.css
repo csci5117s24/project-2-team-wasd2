@@ -16,3 +16,41 @@
     justify-content: center;
 }
 
+.waterlog-list {
+    padding: 0.5rem 2rem;
+}
+
+.date-range-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.date-range-buttons button {
+    margin: 0 0.5rem;
+}
+
+.waterlog-single {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+}
+
+.waterlog-single img {
+    margin-right: 1rem;
+}
+
+.create-time {
+    margin-left: auto;
+}
+
+@media all and (min-width:800px) {
+    .chart-container {
+        margin: 1rem 20%;
+    }
+
+    .waterlog-single {
+        padding: 0.5rem 30%;
+    }
+}
