@@ -4,6 +4,7 @@ import PageContainer from "../components/PageContainer";
 import LiquidGuage from "../components/LiquidGauge";
 import styles from '../css/WorkoutForm.module.css';
 import { SendDelete, SendGet, SendUpdate, SendPost } from "../common/http";
+import { toISODateStr } from "../common/utils";
 
 export const WaterTrackerRoute = {
     path: "/water",
@@ -22,12 +23,14 @@ async function getWaterGoal() {
 }
 
 async function newWaterLog(value, unit) {
+    // const timezoneOffset = new Date().getTimezoneOffset();
     const res = await SendPost("/api/water", {value: value, unit: unit});
     return res.id;
 }
 
 async function getWaterLogs() {
-    const logs = await SendGet("/api/waterlog");
+    const today = new Date();
+    const logs = await SendGet("/api/waterlog", {date: today.toLocaleDateString()});
     return logs.waterlog;
 }
 
@@ -151,13 +154,13 @@ function NavigationBar({ goal}) {
 
 function WaterLogList({ waterLogs, editLog, deleteLog }) {
     const loglist = waterLogs.map(wl => 
-        <div className="column is-full" key={wl.id}>
+        <div key={wl.id}>
             <LogItem log={wl} editLog={editLog} deleteLog={deleteLog} />
         </div>
         )
 
     return (
-        <div className="section columns">
+        <div className="section log-list-container">
             { loglist }
         </div>
     )

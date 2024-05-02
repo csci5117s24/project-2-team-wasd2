@@ -17,7 +17,7 @@ import { WeightTrackerRoute } from './routes/PageWeightTracker';
 
 import { Chart, registerables} from 'chart.js';
 import { WorkOutFormRoute} from './routes/WorkoutForm';
-import { MainpageBodyRoute } from './routes/PageMainpageBody';
+import { MainpageRoute } from './routes/PageMain';
 
 Chart.register(...registerables); // register char.js
 
@@ -33,7 +33,7 @@ const router = createBrowserRouter([
 	    WeightGoalRoute,
 	    WeightTrackerRoute,
       WorkOutFormRoute,
-      MainpageBodyRoute
+      MainpageRoute
     ]
   },
 ]);
