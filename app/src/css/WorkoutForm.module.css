@@ -36,16 +36,55 @@
 
 .workoutList {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 20px;
     margin-top: 20px;
 }
 
 .workoutItem {
-    flex: 1 1 200px; 
     background-color: #f9f9f9;
     padding: 10px;
-    border: 1px solid #ccc; 
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 4px; 
+
 }
 
+.formSection, .listSection {
+    margin-top: 20px;
+}
+.workoutItem button {
+    padding: 10px 20px;
+    color: white;
+    background-color: blue; 
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.workoutItem button:hover {
+    background-color: blue;  
+}
+
+.editContainer{
+    display:flex;
+    justify-content: end;
+}
+
+.editButton , .saveButton{
+    margin-left:10px;
+    color:blue;
+    font-size: 14px;
+    text-decoration: underline;
+}
+
+.selectedWorkout{
+    color:blue;
+    text-align:end;
+    background-color:rgb(98, 208, 14);
+    max-width:fit-content;
+    margin-bottom: 10px;
+    align-self:top;
+
+}

@@ -18,6 +18,7 @@ import { WeightTrackerRoute } from './routes/PageWeightTracker';
 import { Chart, registerables} from 'chart.js';
 import { WorkOutFormRoute} from './routes/WorkoutForm';
 import { MainpageRoute } from './routes/PageMain';
+import {WorkoutCalendarRoute} from './routes/WorkoutChart'
 
 Chart.register(...registerables); // register char.js
 
@@ -29,7 +30,7 @@ const router = createBrowserRouter([
     children: [
       WaterGoalRoute,
       WaterTrackerRoute,
-      WaterCalendarRoute,
+      WorkoutCalendarRoute,
 	    WeightGoalRoute,
 	    WeightTrackerRoute,
       WorkOutFormRoute,
