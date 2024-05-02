@@ -18,19 +18,11 @@ function App() {
         throw new Error("Network response was not OK"); 
       }
       const data = await resp.json();
-      console.log(data);
       setUserinfo(data.clientPrincipal);
-      // if (userinfo) {
-      //   localStorage.setItem("userinfo", JSON.stringify(userinfo));
-      //   window.location.href = "/todos";
-      // }
     }
     getuserinfo();
   }, []
   )
-
-  // const userInfo = getuserinfo();
-  console.log("userinfo in app: ", userinfo);
 
   return (
     <UserContext.Provider value={userinfo}>

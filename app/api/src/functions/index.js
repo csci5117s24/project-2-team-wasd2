@@ -1,6 +1,7 @@
 const { app } = require('@azure/functions');
 const { MongoClient, ObjectID} = require('mongodb');
-const { FindByIDFromMongo, UpdateMongo, DeleteFromMongo } = require('../../common/mongo');
+const { FindByIDFromMongo, UpdateMongo, DeleteFromMongo, FindFromMongo } = require('../common/mongo');
+const {FormatWaterLogs, GetWaterLogStatistics} = require('../biz/water');
 
 app.http('ping', {
     methods: ['GET'],
@@ -40,18 +41,27 @@ app.http('getWaterLogs', {
             }
         }
         const userId = token.userId; 
+        let filters = {userId: userId}
+        const dateStr = request.query.get("date");
+        if (dateStr) {
+            let startDate = new Date(dateStr);
+            let endDate = new Date(dateStr);
+            endDate.setDate(endDate.getDate() + 1);
+            filters.createDate = {$gte:startDate, $lt: endDate};
+        }
+        console.log(filters);
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const waterlog = await client.db("tracker").collection("water").find({userId: userId}).toArray();
+        const waterlog = await client.db("tracker").collection("water").find(filters).toArray();
         client.close();
-
-        console.log(waterlog);
+        const res = await FormatWaterLogs(userId, waterlog);
 
         return {
             status: 200, 
-            jsonBody: {waterlog: waterlog}
+            jsonBody: {waterlog: res}
         }
     }
 })
+
 
 app.http('getWorkoutLogs', {
     methods: ["GET"], 
@@ -155,49 +165,6 @@ app.http('getWeightLog', {
                 return {
                     status: 200,
                     jsonBody: {status: "updated", weightlog: weightlog}
-                }
-            }
-        } else {
-            return {
-                status: 400, 
-                jsonBody: {
-                    message: "invalid id for water log"
-                }
-            }
-        }
-    }
-})
-
-app.http('getWaterLog', {
-    methods: ["GET"], 
-    authLevel: "anonymous",
-    route: "water/{id}",
-    handler: async (request, context) => {
-        const token = await authenticate(request);
-        if (!token) {
-            return {
-                status: 401
-            }
-        }
-        const userId = token.userId;
-        const id = request.params.id;
-
-        if (ObjectID.isValid(id)) {
-            const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-            const waterlog = await client.db("tracker").collection("water").findOne({userId: userId, _id: ObjectID(id)});
-            client.close();
-
-            if (waterlog.matchedCount === 0) {
-                return {
-                    status: 404, 
-                    jsonBody: {
-                        message: "water log not found"
-                    }
-                }
-            } else {
-                return {
-                    status: 200,
-                    jsonBody: {status: "updated", waterlog: waterlog}
                 }
             }
         } else {
@@ -415,7 +382,7 @@ app.http('postWaterLog', {
             userId: userId,
             value: data.value,
             unit: data.unit,
-            createTime: Date.now(),
+            createDate: new Date()
         }
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const result = await client.db("tracker").collection("water").insertOne(playload);
@@ -591,4 +558,27 @@ app.http('putWeightLog', {
 })
 
 
-
+app.http('getWaterLogStats', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "water/stats", 
+    handler: async (request, context) => {
+        // take care of auth
+        const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
+        const userId = token.userId; 
+        var rangeType = request.query.get("rangeType");
+        if (!rangeType) {
+            rangeType = "days";
+        }
+        const res = await GetWaterLogStatistics(userId, rangeType);
+        return {
+            status: 200, 
+            jsonBody:  res
+        }
+    }
+})
