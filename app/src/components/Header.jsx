@@ -134,7 +134,8 @@ function DropdownNav() {
 }
 
 function UserInfo() {
-    const userinfo = useContext(UserContext);
+
+    const userinfo  = useContext(UserContext);
     const username = userinfo ? userinfo.userDetails : "";
     const avtarUrl = userinfo ? "" : "";
 
