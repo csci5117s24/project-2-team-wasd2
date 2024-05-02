@@ -11,8 +11,8 @@ export const MainpageRoute = {
 }
 
 function PageMain() {
-    const userinfo = useContext(UserContext);
-    const content = userinfo ? <LoggedInMainPage/> : <NotLoggedInMainPage/>;
+    const userinfo  = useContext(UserContext);
+    const content = userinfo && userinfo.userDetails ? <LoggedInMainPage/> : <NotLoggedInMainPage/>;
     
     return  (
         <div className="main-page-container">
@@ -26,7 +26,9 @@ function PageMain() {
     )
 }
 
+
 function LoggedInMainPage() {
+    
     return (
         <div>
             <h1 style={{textAlign: "center"}}> Welcome Back</h1>
@@ -61,7 +63,6 @@ function NotLoggedInMainPage() {
 }
 
 function DailyCharts() {
-
     const [waterData, setWaterData] = useState({});
     const [weightData, setWeightData] = useState({});
     const [exerciseData, setExerciseData] = useState({});
@@ -80,9 +81,9 @@ function DailyCharts() {
             setWaterData(data.dataset);
             setWeightData(mockdata);
             setExerciseData(mockdata);
-        }
+        } 
         fetchData();
-    })
+    }, [])
 
     return (
         <div className="columns">
