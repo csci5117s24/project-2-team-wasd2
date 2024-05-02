@@ -30,6 +30,7 @@ const router = createBrowserRouter([
     children: [
       WaterGoalRoute,
       WaterTrackerRoute,
+      WaterCalendarRoute,
       WorkoutCalendarRoute,
 	    WeightGoalRoute,
 	    WeightTrackerRoute,

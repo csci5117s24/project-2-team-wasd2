@@ -4,7 +4,6 @@ import PageContainer from "../components/PageContainer";
 import LiquidGuage from "../components/LiquidGauge";
 import styles from '../css/WorkoutForm.module.css';
 import { SendDelete, SendGet, SendUpdate, SendPost } from "../common/http";
-import { toISODateStr } from "../common/utils";
 
 export const WaterTrackerRoute = {
     path: "/water",
