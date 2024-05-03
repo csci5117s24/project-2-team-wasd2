@@ -19,8 +19,8 @@
               }
             },
             "login": {
-              "nameClaimType": "email",
-              "scopes": ["openid", "profile", "offline_access"],
+              "nameClaimType": "emails",
+              "scopes": ["openid", "profile"],
               "loginParameterNames": []
             }
           }
