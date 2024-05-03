@@ -1,6 +1,6 @@
 /* 
 ==================================================================
-Credit to team Ajay, I took this file of code from their tech share
+Credit to team Ajay, I got this code from thier tech share
 https://github.com/csci5117s24/Ajay-cloudinary-tech-share
 ==================================================================
 */

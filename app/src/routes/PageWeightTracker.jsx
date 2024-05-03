@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { weightGoal, weightDeadline, weightLogList, UpdateWeightGoal, UpdateWeightLogList } from "../common/mock_data";
+import { SendGet, SendPost, SendUpdate, SendDelete } from "../common/http";
 import { InputWithTwoUnits } from '../components/InputWithTwoUnits';
 import PageContainer from "../components/PageContainer";
 import '../css/PageWeight.css'
@@ -28,61 +28,79 @@ export const WeightTrackerRoute = {
 const kgToLbsCoefficient = 2.20462;
 const cloudinaryURL = "https://res.cloudinary.com/dtjacou0b/image/upload/v1714500953/"
 
+async function getWeightGoal() {
+    const goal = await SendGet("/api/weight/goal", {});
+    return goal.goal;
+}
+async function getWeightLogs() {
+    const logs = await SendGet("/api/weight", {});
+    return logs.weightlog;
+}
+async function newWeightLog(log) {
+    const res = await SendPost("/api/weight", {...log});
+    return res.id;
+}
+
+async function updateWeightLog(log) {
+    await SendUpdate("/api/weight" , {...log});
+}
+async function deleteWeightLog(id) {
+    await SendDelete("/api/weight", {_id: id});
+}
+
+
 export function PageWeightTracker() {
-    const [goal, setGoal] = useState({});
+    const [goal, setGoal] = useState({value: 0, unit: "kg", deadline: 0});
     const [weightLogs, setWeightLogs] = useState([]);
     const [showAddLog, setShowAddLog] = useState(false);
 
     useEffect(() => {
         async function fetchData() {
             // get goal
-            var curGoal = {goal: weightGoal, deadline: weightDeadline}
+			var curGoal = await getWeightGoal();
             // get weight logs
-            var curLogs = weightLogList;
+            var curLogs = await getWeightLogs();
             setGoal(curGoal);
             setWeightLogs(curLogs);
         }
         fetchData();
     }, []);
 
-    async function updateGoal(newGoal, isSubmit) {
-        if (isSubmit) {
-            UpdateWeightGoal(newGoal.goal, newGoal.deadline);
-            setGoal(newGoal);
-        } else {
-            setGoal(newGoal);
-        }
-    }
-
     function editLog(data, picture) {
-        var idx = weightLogList.findIndex(nl => nl.timestamp === data.timestamp);
+		let wls = [...weightLogs]
+        var idx = wls.findIndex(wl => wl._id === data._id);
 		if (data.value) {
-			weightLogList[idx].value = data.value;
+			wls[idx].value = data.value;
+			wls[idx].unit = data.unit;
 		} else {
 			return;
 		}
 		if (picture) {
-			weightLogList[idx].picture = picture;
+			wls[idx].picture = picture;
 		} else {
 			return;
 		}
-        setWeightLogs(weightLogList);
+		updateWeightLog(weightLogs[idx])
+        setWeightLogs(wls);
     }
 
-    function deleteLog(id) {
-        UpdateWeightLogList(weightLogList.filter(wl => wl.timestamp !== id));
-        setWeightLogs(weightLogList);
+    async function deleteLog(id) {
+		if (window.confirm("Are you sure you want to delete this log?")){
+			deleteWeightLog(id);
+			setWeightLogs(weightLogs.filter(wl => wl._id !== id));
+		}
     }
 
-    async function newWeightLog(data, picture) {
-        var newLog = {
+	async function addWeightLog(data, picture) {
+        const logId = await newWeightLog({...data, timestamp: Date.now(), picture});
+        const newLog = {
+			_id: logId,
             value: data.value,
             unit: data.unit,
 			picture: picture,
+			timestamp: Date.now()
         }
-        newLog.timestamp = Date.now();
-        weightLogList.push(newLog);
-        setWeightLogs(weightLogList);
+        setWeightLogs([...weightLogs, newLog]);
     }
 	
     return (
@@ -91,15 +109,14 @@ export function PageWeightTracker() {
                 <p className="motto">Balance for Better: Choose Health!</p>
                 <img src="/quote-right.svg" alt="quote"></img>
             </div>
-            {/* <h1 className="primary-title">Weight Logs</h1> */}
             <button className="button is-primary" onClick={()=> setShowAddLog(true)}>Record Weight for Today</button>
             {showAddLog && <WeightLogModal
                 showModal={showAddLog}
                 setShowModal={setShowAddLog}
                 weightLog={undefined} 
                 unit={goal.unit} 
-                addOrUpdateLog={newWeightLog}/>}
-			<LineChart logs={weightLogs} goal={weightGoal}/>
+                addOrUpdateLog={addWeightLog}/>}
+			<LineChart logs={weightLogs} goal={goal}/>
             <WeightLogList weightLogs={weightLogs} editLog={editLog} deleteLog={deleteLog}/>
         </div>
     )
@@ -131,7 +148,7 @@ function LogItem({log, editLog, deleteLog}) {
             { showBubble &&
                 <div className="one">
                     <button className="button is-info" onClick={()=>setShowEditLog(true)}>Edit</button>
-                    <button className="button is-danger" onClick={()=>deleteLog(log.timestamp)}>Delete</button>
+                    <button className="button is-danger" onClick={()=>deleteLog(log._id)}>Delete</button>
                 </div> 
             }
             {showEditLog && <WeightLogModal 
@@ -202,7 +219,7 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
 		if (picture){
 			addOrUpdateLog(data, picture);
 		} else {
-			addOrUpdateLog(data, "weight_images/yfccv6acbg6pee8gsu4s");
+			addOrUpdateLog(data, "weight_images/d2heysixbf56qpdnwnu7");
 		}
 		setShowModal(false);
     }
@@ -248,6 +265,7 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
 }
 
 function LineChart({logs, goal}) {
+	console.log(logs)
 	let dates = []
 	for (var l of logs){
 		let d = new Date(l.timestamp);
@@ -258,7 +276,20 @@ function LineChart({logs, goal}) {
 		datasets: [
 		  {
 			label: 'Your Weight Progress',
-			data: logs && logs.map(log => log.value),
+			data: logs && logs.map(log => {
+				// Scale the units if they do not match up
+				if (log.unit !== goal.unit){
+					console.log('unmatch')
+					console.log(l)
+					console.log(goal.unit)
+					if (goal.unit === "kg"){
+						return log.value / kgToLbsCoefficient
+					} else {
+						return log.value * kgToLbsCoefficient
+					}
+				} else {
+					return log.value
+		  		}}),
 			fill: false,
 			backgroundColor: 'rgb(75, 192, 192)',
 			borderColor: 'rgba(75, 192, 192, 0.2)',
@@ -280,8 +311,8 @@ function LineChart({logs, goal}) {
 			  annotations: {
 				goal: {
 				  type: 'line',
-				  yMin: goal,
-				  yMax: goal,
+				  yMin: goal.value,
+				  yMax: goal.value,
 				  borderWidth: 2,
 				  borderColor: 'blue',
 				  borderDash: [5, 5], // This creates a dashed line pattern
