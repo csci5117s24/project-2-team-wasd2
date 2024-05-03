@@ -443,7 +443,7 @@ app.http('postWeightGoal', {
         const userId = token.userId;
         const goal = request.body ?? {}; // need to figure out what the frontend body looks like to create payload
 
-        const payload = {userId, goal};
+        const payload = {userId:userId, goal:goal};
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const result = await client.db("tracker").collection("weight").insertOne(payload);
         client.close();
@@ -536,7 +536,7 @@ app.http('putWaterGoal', {
         const userId = token.userId;
         const goal = request.body ?? {}; // need to figure out what the frontend body looks like to create payload
 
-        const payload = {userId, goal};
+        const payload = {userId: userId, goal: goal};
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const result = await client.db("tracker").collection("water_goal").updateOne({userId: userId}, {$set: {goal: goal}});
         client.close();
@@ -564,10 +564,10 @@ app.http('postWeightLog', {
         const userId = token.userId;
         const weight = request.body.weight ?? 0;
         const unit = request.body.unit ?? "kg"; 
-        const picutre = request.body.picture;
+        const picture = request.body.picture;
         const date = request.body.timestamp;
 
-        const payload = {userId, weight, date, unit,picture};
+        const payload = {userId: userId, weight:weight, timestamp:date, unit:unit, picture : picture};
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const result = await client.db("tracker").collection("weight").insertOne(payload);
         client.close();
@@ -579,7 +579,34 @@ app.http('postWeightLog', {
     }
 })
 
+app.http('postWorkoutLog', {
+    methods: ["POST"], 
+    authLevel: "anonymous",
+    route: "workout",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
+        const userId = token.userId;
+        const title = request.body.title ?? 0;
+        const description = request.body.description ?? "none"; 
+        const calories = request.body.calories;
+        const timestamp = request.body.timestamp ?? 0;
+        const goal = request.body.goal ?? 0;
+        const payload = {userId: userId,timestamp:timestamp, title:title, description: description,calories: calories,goal:goal};
+        const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
+        const result = await client.db("tracker").collection("weight").insertOne(payload);
+        client.close();
 
+        return {
+            status: 200, 
+            jsonBody: {title: title, description: description, calories: calories}
+        }
+    }
+})
 
 
 app.http('postWaterLog', {
