@@ -2,6 +2,8 @@ const { app } = require('@azure/functions');
 const { MongoClient, ObjectID} = require('mongodb');
 const { FindByIDFromMongo, UpdateMongo, DeleteFromMongo, FindFromMongo } = require('../common/mongo');
 const {FormatWaterLogs, GetWaterLogStatistics} = require('../biz/water');
+const { GetExerciseLogs, AddExerciseLog, UpdateExerciseLog, DeleteExerciseLog, GetCalorieStatistics, SetWeeklyExerciseGoals, GetWeeklyExerciseGoals,UpdateWeeklyExerciseGoals} = require('../biz/exercise');
+
 
 app.http('ping', {
     methods: ['GET'],
@@ -26,6 +28,299 @@ async function authenticate(request) {
     }
     return token;
 }
+app.http('getExerciseLogs', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "exercise/logs", 
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401, jsonBody: { error: "Unauthorized access" } };
+        }
+
+        const userId = token.userId;
+        let filters = { userId: userId };
+        const dateStr = request.query.get("date");
+        if (dateStr) {
+            console.log("Received date string:", dateStr);
+            let startDate = new Date(dateStr);
+            console.log("Parsed start date:", startDate);
+            let endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 1);
+            console.log("Calculated end date:", endDate);
+            filters.date = { $gte: startDate, $lt: endDate };
+        }
+        
+
+        const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
+        try {
+            const db = client.db("tracker");
+            const collection = db.collection("exercise_logs");
+            const exerciseLogs = await collection.find(filters).toArray();
+
+            return {
+                status: 200,
+                jsonBody: { exerciseLogs }
+            };
+        } catch (error) {
+            console.error("Error retrieving exercise logs:", error);
+            return { status: 500, jsonBody: { error: "Failed to retrieve exercise logs" } };
+        } finally {
+            client.close(); 
+        }
+    }
+});
+
+
+app.http('getExerciseLog', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "exercise/log/{timestamp}", 
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401 };
+        }
+        const userId = token.userId;
+        const timestamp = new Date(request.params.timestamp);
+        const logs = await FindFromMongo("exercise_logs", { userId, timestamp });
+        return {
+            status: 200, 
+            jsonBody: { log: logs }
+        }
+    }
+});
+
+
+app.http('addExerciseLog', {
+    methods: ["POST"],
+    authLevel: "anonymous",
+    route: "exercise",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            console.log("Authentication failed");
+            return { status: 401, jsonBody: { error: "Unauthorized access" } };
+        }
+
+        const userId = token.userId;
+        const exercise = await request.json();
+
+        console.log("Received exercise data:", exercise);
+        if ( !exercise.title || !exercise.description || !exercise.calories) {
+            return {
+                status: 400,
+                jsonBody: { message: "Invalid parameter, missing one of the required fields." }
+            };
+        }
+
+        const newLog = {
+            userId,
+            title: exercise.title,
+            description: exercise.description,
+            calories: exercise.calories,
+            timestamp: new Date(exercise.timestamp)
+        };
+
+        try {
+            const resultId = await AddExerciseLog(newLog);
+            console.log("Insert successful, ID:", resultId);
+            return {
+                status: 200,
+                jsonBody: { id: resultId }
+            };
+        } catch (error) {
+            console.error("Failed to insert exercise log:", error);
+            return {
+                status: 500,
+                jsonBody: { error: "Failed to add exercise log" }
+            };
+        }
+    }
+});
+
+
+
+
+
+app.http('updateExerciseLog', {
+    methods: ["PUT"], 
+    authLevel: "anonymous",
+    route: "exercise/{id}",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401 };
+        }
+        const userId = token.userId;
+        const { title, description, calories } = request.body;
+        const logId = request.params.id;
+        const updates = { title, description, calories };
+        const updated = await UpdateExerciseLog(logId, updates);
+        return {
+            status: 200, 
+            jsonBody: { updated }
+        }
+    }
+});
+
+app.http('deleteExerciseLog', {
+    methods: ["DELETE"], 
+    authLevel: "anonymous",
+    route: "exercise/{id}",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401 };
+        }
+        const logId = request.params.id;
+        const deleted = await DeleteExerciseLog(logId);
+        return {
+            status: 200, 
+            jsonBody: { deleted }
+        }
+    }
+});
+
+app.http('updateCalorieGoal', {
+    methods: ["POST"],
+    authLevel: "anonymous",
+    route: "calorieGoal/update",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            console.log("Authentication failed");
+            return { status: 401, jsonBody: { error: "Unauthorized access" } };
+        }
+
+        const userId = token.userId;
+        const { workoutId, caloriesBurned } = await request.json();
+
+        if (!workoutId || typeof caloriesBurned !== 'number' || caloriesBurned <= 0) {
+            return {
+                status: 400,
+                jsonBody: { message: "Invalid parameter, missing or incorrect fields." }
+            };
+        }
+
+        try {
+            const today = new Date();
+            const weekStartDate = new Date(today.setDate(today.getDate() - today.getDay())).toISOString();
+            let [goals] = await FindFromMongo("weekly_goals", { userId, weekStartDate });
+
+            if (!goals) {
+                goals = {
+                    userId,
+                    weekStartDate,
+                    goals: { calorieGoal: 1000, workoutsLogged: [] }, 
+                    createdAt: new Date()
+                };
+                await InsertToMongo("weekly_goals", goals);
+            }
+
+            const updates = {
+                "$set": {
+                    "goals.calorieGoal": goals.goals.calorieGoal - caloriesBurned
+                },
+                "$push": {
+                    "goals.workoutsLogged": {
+                        workoutId,
+                        caloriesBurned,
+                        timestamp: new Date()
+                    }
+                }
+            };
+
+            await UpdateMongo("weekly_goals", goals._id, updates);
+
+            return {
+                status: 200,
+                jsonBody: { message: "Calorie goal updated successfully" }
+            };
+        } catch (error) {
+            console.error("Failed to update calorie goal:", error);
+            return {
+                status: 500,
+                jsonBody: { error: "Failed to update calorie goal" }
+            };
+        }
+    }
+});
+app.http('getCalorieGoal', {
+    methods: ["GET"],
+    authLevel: "anonymous",
+    route: "calorieGoal",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401,
+                jsonBody: { error: "Unauthorized access" }
+            };
+        }
+
+        const userId = token.userId;
+        const weekStartDate = request.query.weekStartDate;
+
+        try {
+            const goals = await FindFromMongo("weekly_goals", { userId, weekStartDate });
+            return {
+                status: 200,
+                jsonBody: goals.length > 0 ? goals[0] : "No goals found for the specified week."
+            };
+        } catch (error) {
+            return {
+                status: 500,
+                jsonBody: { error: "Failed to fetch calorie goals due to an internal error" }
+            };
+        }
+    }
+});
+
+app.http('setCalorieGoal', {
+    methods: ["POST"],
+    authLevel: "anonymous",
+    route: "calorieGoal/set",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401,
+                jsonBody: { error: "Unauthorized access" }
+            };
+        }
+
+        const userId = token.userId;
+        const { weekStartDate, calorieGoal } = await request.json();
+
+        if (!weekStartDate || calorieGoal === undefined) {
+            return {
+                status: 400,
+                jsonBody: { message: "Invalid parameter, missing one of the required fields." }
+            };
+        }
+
+        try {
+            const newGoal = {
+                userId,
+                weekStartDate,
+                goals: { calorieGoal, workoutsLogged: [] },
+                createdAt: new Date()
+            };
+            await InsertToMongo("weekly_goals", newGoal);
+
+            return {
+                status: 200,
+                jsonBody: "New calorie goal set successfully"
+            };
+        } catch (error) {
+            return {
+                status: 500,
+                jsonBody: { error: "Failed to set new calorie goal due to an internal error" }
+            };
+        }
+    }
+});
 
 
 app.http('getWaterLogs', {
@@ -63,53 +358,8 @@ app.http('getWaterLogs', {
 })
 
 
-app.http('getWorkoutLogs', {
-    methods: ["GET"], 
-    authLevel: "anonymous",
-    route: "workout/logs", 
-    handler: async (request, context) => {
-        // take care of auth
-        const token = await authenticate(request);
-        if (!token) {
-            return {
-                status: 401
-            }
-        }
-        const userId = token.userId; 
-        const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const workoutlog = await client.db("tracker").collection("workout").find({userId: userId}).toArray();
-        client.close();
 
-        console.log(workoutlog);
 
-        return {
-            status: 200, 
-            jsonBody: {workoutlog: workoutlog}
-        }
-    }
-})
-
-app.http('getWorkoutLog', {
-    methods: ["GET"], 
-    authLevel: "anonymous",
-    route: "workout/log", 
-    handler: async (request, context) => {
-        // take care of auth
-        const token = await authenticate(request);
-        const userId = token.userId; 
-        const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const timestamp = request.params.timestamp;
-        const workoutlog = await client.db("tracker").collection("workout").find({userId: userId,timestamp:timestamp}).toArray();
-        client.close();
-
-        console.log(workoutlog);
-
-        return {
-            status: 200, 
-            jsonBody: {workoutlog: workoutlog}
-        }
-    }
-})
 app.http('getWeightLogs', {
     methods: ["GET"], 
     authLevel: "anonymous",
@@ -200,7 +450,6 @@ app.http('postWeightGoal', {
                 jsonBody: {message: "invalid parameter"}
             }
         }
-
 
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const existingGoal = await client.db("tracker").collection("weight_goal").findOne({userId: userId});
@@ -328,7 +577,7 @@ app.http('putWaterGoal', {
         const userId = token.userId;
         const goal = request.body ?? {}; // need to figure out what the frontend body looks like to create payload
 
-        const payload = {userId, goal};
+        const payload = {userId: userId, goal: goal};
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const result = await client.db("tracker").collection("water_goal").updateOne({userId: userId}, {$set: {goal: goal}});
         client.close();
@@ -354,7 +603,7 @@ app.http('postWeightLog', {
             }
         }
 
-        const userId = token.userId;
+    const userId = token.userId;
 		const data = await request.json();
 
 		if (!data || !data.value || !data.unit || !data.picture || !data.timestamp) {
@@ -398,7 +647,7 @@ app.http('postWorkoutLog', {
         const calories = request.body.calories;
         const timestamp = request.body.timestamp ?? 0;
         const goal = request.body.goal ?? 0;
-        const payload = {userId,timestamp, title, description, calories,goal};
+        const payload = {userId: userId,timestamp:timestamp, title:title, description: description,calories: calories,goal:goal};
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
         const result = await client.db("tracker").collection("weightlog").insertOne(payload);
         client.close();
@@ -549,50 +798,6 @@ app.http('deleteWeightLog', {
     }
 })
 
-app.http('putWorkoutLog', {
-    methods: ["PUT"], 
-    authLevel: "anonymous",
-    route: "workout/{id}",
-    handler: async (request, context) => {
-        const token = await authenticate(request);
-        if (!token) {
-            return {
-                status: 401
-            }
-        }
-        const userId = token.userId;
-        const id = request.params.id;
-        const title = request.body.title;
-        const description = request.body.description;
-        const calories = request.body.calories;
-        if (ObjectID.isValid(id)) {
-            const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-            const result = await client.db("tracker").collection("weightlog").updateOne({userId: userId, _id: new ObjectID(id)}, {$set: title, description, calories});
-            client.close();
-
-            if (result.matchedCount === 0) {
-                return {
-                    status: 404, 
-                    jsonBody: {
-                        message: "water log not found"
-                    }
-                }
-            } else {
-                return {
-                    status: 200, 
-                    jsonBody: {title: title, description: description, calories: calories}
-                }
-            }
-        } else {
-            return {
-                status: 404, 
-                jsonBody: {
-                    message: "invalid id for weight log"
-                }
-            }
-        }
-    }
-})
 
 app.http('putWeightLog', {
     methods: ["PUT"], 

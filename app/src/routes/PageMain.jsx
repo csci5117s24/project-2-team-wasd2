@@ -40,7 +40,7 @@ function LoggedInMainPage() {
 
 function NotLoggedInMainPage() {
     function login() {
-        window.location.href = "/.auth/login/github";
+        window.location.href = "/.auth/login/aadb2c";
     }
     return (
         <div className="columns">

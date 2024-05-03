@@ -5,13 +5,15 @@ export async function SendGet(url, params) {
 }
 
 export async function SendPost(url, data) {
+    console.log("Data being sent:", JSON.stringify(data, null, 2));
     const resp = await fetch(url, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(data),
-    });
+    });    
+    
     return await parseResponse(resp);
 }
 

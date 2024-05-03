@@ -6,9 +6,16 @@ module.exports = {
     FormatWaterLogs
 }
 
+const defaultUnit = "oz";
+
 async function GetWaterLogStatistics(userId, rangeType) {
     const waterGoal = await FindFromMongo("water_goal", {userId: userId});
-    const goalUnit = waterGoal[0].unit;
+    let goalUnit;
+    if (!waterGoal || waterGoal.length == 0) {
+        goalUnit = defaultUnit;
+    } else {
+        goalUnit = waterGoal[0].unit;
+    }
     var res = [];
     if (rangeType === "days") {
         res = await getLast7DayLog(userId, goalUnit);
@@ -85,7 +92,7 @@ async function getLast4WeekLog(userId, unit) {
     }
     let stats = calStat(waterLogs, keyFunc, unit);
     const weeks = genWeeksLable(startDate);
-    
+
     let res = [];
     for (let i = 0; i < 4; i++) {
         res.push({
