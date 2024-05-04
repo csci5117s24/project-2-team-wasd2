@@ -60,7 +60,11 @@ export function PageWeightTracker() {
 			var curGoal = await getWeightGoal();
             // get weight logs
             var curLogs = await getWeightLogs();
-            setGoal(curGoal);
+			if (curGoal !== null) {
+				setGoal(curGoal);
+			} else {
+				window.location.href = "/weight/goal"
+			}
             setWeightLogs(curLogs);
         }
         fetchData();
