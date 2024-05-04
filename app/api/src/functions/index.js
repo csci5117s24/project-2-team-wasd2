@@ -29,7 +29,6 @@ async function authenticate(request) {
         token = JSON.parse(Buffer.from(auth_header, 'base64').toString());
         console.log(token); 
     }
-    token = {userId: "ee985242d8e37a97d7eff27a807bdcb3"} // fixme: delete
     return token;
 }
 
