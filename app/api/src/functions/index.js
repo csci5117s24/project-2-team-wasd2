@@ -902,3 +902,38 @@ app.http('getWaterLogStats', {
         }
     }
 })
+
+
+app.http('updateCalorieGoal', {
+    methods: ["PUT"],
+    authLevel: "anonymous",
+    route: "calorieGoal/update",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            console.log("Authentication failed");
+            return { status: 401, jsonBody: { error: "Unauthorized access" } };
+        }
+
+        const userId = token.userId;
+        const { workoutId, caloriesBurned } = await request.json();
+
+        if (!workoutId || typeof caloriesBurned !== 'number' || caloriesBurned <= 0) {
+            return {
+                status: 400,
+                jsonBody: { message: "Invalid parameter, missing or incorrect fields." }
+            };
+        }
+
+        const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
+        const result = await client.db("tracker").collection("calorie_goal").updateOne({userId: userId}, {$inc: {calorieGoal: -caloriesBurned}});
+        client.close();
+
+        return {
+            status: 200,
+            jsonBody: { message: "Calorie goal updated successfully" }
+        };
+        
+    }
+    
+})
