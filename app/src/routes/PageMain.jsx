@@ -4,6 +4,7 @@ import UserContext from "../components/UserContext";
 import "../css/PageMain.css";
 import { LineChart } from "../components/Charts";
 import { SendGet } from "../common/http";
+import ReactLoading from 'react-loading';
 
 export const MainpageRoute = {
     path: "/",
@@ -32,7 +33,7 @@ function LoggedInMainPage() {
     return (
         <div>
             <h1 style={{textAlign: "center"}}> Welcome Back</h1>
-            <p style={{ textAlign:"center", margin: "0", marginBottom: "2rem"}}>Here is your daily summay</p>
+            <p style={{ textAlign:"center", margin: "0", marginBottom: "2rem"}}>Here is your daily summary</p>
             <DailyCharts/>
         </div>
     )
@@ -66,6 +67,7 @@ function DailyCharts() {
     const [waterData, setWaterData] = useState({});
     const [weightData, setWeightData] = useState({});
     const [exerciseData, setExerciseData] = useState({});
+    const [loading, setLoading] = useState(true);
 
     const mockdata = [ {label: "Apr 1", value: 2000},
     {label: "Apr 2", value: 3000},
@@ -77,25 +79,39 @@ function DailyCharts() {
 
     useEffect(()=>{
         async function fetchData() {
-            const data = await SendGet("/api/water/stats", {rangeType: "days"});
-            setWaterData(data.dataset);
+            setLoading(true);
+            const today = new Date().toLocaleDateString();
+            const water = await SendGet("/api/water/stats", {rangeType: "days", dateStr: today});
+            setWaterData(water.dataset);
+            setWaterData(water.dataset);
             setWeightData(mockdata);
-            setExerciseData(mockdata);
-        } 
+            const exercise = await SendGet("/api/calorie/stats", {endDate: today});
+            const chartData = exercise.stats.map((stat) => {return {label: stat.date, value: stat.calories}})
+            setExerciseData(chartData);
+            setLoading(false);
+        }
         fetchData();
     }, [])
 
-    return (
-        <div className="columns">
-            <div className="column is-one-third">
-                <LineChart dataset={waterData} title={"water drinking"}></LineChart>
+    if (loading) {
+        return (
+            <div className="main-page-body">
+                <ReactLoading type="bars" color="#14F3CB" />
             </div>
-            <div className="column is-one-third">
-                <LineChart dataset={weightData} title={"weight change"}></LineChart>
+        )
+    } else {
+        return (
+            <div className="columns">
+                <div className="column is-one-third">
+                    <LineChart dataset={waterData} title={"water drinking"}></LineChart>
+                </div>
+                <div className="column is-one-third">
+                    <LineChart dataset={weightData} title={"weight change"}></LineChart>
+                </div>
+                <div className="column is-one-third">
+                    <LineChart dataset={exerciseData} title={"calorie consumed"}></LineChart>
+                </div>
             </div>
-            <div className="column is-one-third">
-                <LineChart dataset={exerciseData} title={"calorie consumed"}></LineChart>
-            </div>
-        </div>
-    )
+        )
+    }
 }

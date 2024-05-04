@@ -314,10 +314,10 @@ app.http('getWeeklyCalorieStats', {
         if (!endDateStr) {
             endDateStr = new Date().toLocaleDateString();
         }
-        const logs = await GetWeeklyCalorieStats(token.userId, endDateStr);
+        const stats = await GetWeeklyCalorieStats(token.userId, endDateStr);
         return {
             status: 200, 
-            jsonBody: {calorieLogs: logs}
+            jsonBody: {stats: stats}
         }
     }
 });
@@ -1035,7 +1035,11 @@ app.http('getWaterLogStats', {
         if (!rangeType) {
             rangeType = "days";
         }
-        const res = await GetWaterLogStatistics(userId, rangeType);
+        let dateStr = request.query.get("dateStr");
+        if (!dateStr) {
+            dateStr = new Date().toLocaleDateString();
+        }
+        const res = await GetWaterLogStatistics(userId, rangeType, dateStr);
         return {
             status: 200, 
             jsonBody:  res
