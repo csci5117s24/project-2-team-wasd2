@@ -10,7 +10,6 @@ module.exports = {
     GetDailyCalorieGoal,
     AddCalorieLog,
     DeleteCalorieLog,
-    DeleteCalorieLog,
     GetCalorieLogs,
     GetWeeklyCalorieStats
 }
@@ -27,7 +26,7 @@ async function GetExerciseLogs(userId) {
 
 // Add a new exercise log
 async function AddExerciseLog(exerciseLog) {
-    console.log("work ", exerciseLog)
+    // console.log("work ", exerciseLog)
     return await InsertToMongo("exercise_logs", exerciseLog);
 }
 
@@ -37,10 +36,11 @@ async function UpdateExerciseLog(logId, updates) {
 }
 
 async function SetDailyCalorieGoal(userId, goal) {
-    const today = new Date();
-    const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDay());
-    const endTime = new Date(today.getFullYear(), today.getMonth(), today.getDay()+1);
-    const existingGoal = await FindFromMongo("exercise_goal", {userId: userId, createdAt: {$gte:startTime, $lt:endTime}});
+    const today = new Date().toLocaleDateString();
+    let startTime = new Date(today);
+    let endTime = new Date(today);
+    endTime.setHours(endTime.getHours() + 24);
+    const existingGoal = await FindFromMongo(collectionCalorieGoal, {userId: userId, createdAt: {$gte:startTime, $lt:endTime}});
     if (existingGoal && existingGoal.length > 0) {
         const recordID = existingGoal[0]._id;
         await UpdateMongo(collectionCalorieGoal, recordID, {goal: goal});
@@ -76,6 +76,7 @@ async function AddCalorieLog(userId, exerciseId) {
     }
     const calorieLog = {
         userId: userId,
+        exerciseId: exerciseId,
         exerciseName: exercise.title,
         calories: exercise.calories,
         createdAt: new Date(),
@@ -87,41 +88,43 @@ async function AddCalorieLog(userId, exerciseId) {
 }
 
 async function GetCalorieLogs(userId, dateStr) {
-    const theDay = new Date(dateStr);
-    const startTime = new Date(theDay.getFullYear(), theDay.getMonth(), theDay.getDay());
-    const endTime = new Date(theDay.getFullYear(), theDay.getMonth(), theDay.getDay()+1);
-
+    const startTime = new Date(dateStr);
+    let endTime = new Date(dateStr);
+    endTime.setHours(endTime.getHours() + 24);
     const logs = await FindFromMongo(collectionCalorieLog, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
     return logs;
 }
 
-async function DeleteCalorieLog(userId, calorieLogId) {
-    const calorieLog = await FindByIDFromMongo(collectionCalorieLog, calorieLogId);
-    if (!calorieLog || exercise.userId !== userId) {
+async function DeleteCalorieLog(userId, exerciseId, dateStr) {
+    const startTime = new Date(dateStr);
+    let endTime = new Date(dateStr);
+    endTime.setHours(endTime.getHours() + 24);
+    const calorieLogs = await FindFromMongo(collectionCalorieLog, 
+        {userId: userId, exerciseId: exerciseId, createdAt: {$gte: startTime, $lt: endTime}});
+    if (!calorieLogs || calorieLogs.length === 0) {
         return -1;
     }
-    await DeleteFromMongo(collectionCalorieGoal, calorieLogId);
+    await DeleteFromMongo(collectionCalorieLog, calorieLogs[calorieLogs.length-1]._id);
+    return 0;
 }
 
 async function GetLatestCalorieGoal(userId) {
-    const latestGoal = await FindFromMongoWithSort(collectionCalorieGoal, {userId: userId}, {createdAt: -1});
+    const latestGoal = await FindFromMongoWithSort(collectionCalorieGoal, {userId: userId}, {_id: -1});
     return latestGoal ? latestGoal[0] : {};
 }
 
 
 async function GetWeeklyCalorieStats(userId, endDateStr) {
-    const endDate = new Date(endDateStr);
-    const year = endDate.getFullYear();
-    const month = endDate.getMonth();
-    const day = endDate.getDay();
-    const startTime = new Date(year, month, day - 6);
-    const endTime = new Date(year, month, day +1 );
+    let startTime = new Date(endDateStr);
+    startTime.setDate(startTime.getDate() - 6);
+    let endTime = new Date(endDateStr);
+    endTime.setDate(endTime.getDate() + 1);
     const calorieLogs = await FindFromMongo(collectionCalorieLog, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
     if (!calorieLogs) {
         return [];
     }
     let calorieGoals = await FindFromMongo(collectionCalorieGoal, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
-    if (!calorieGoals) {
+    if (!calorieGoals || calorieGoals.length === 0) {
         const latestGoal = await GetLatestCalorieGoal();
         calorieGoals = [latestGoal];
     }
@@ -129,23 +132,25 @@ async function GetWeeklyCalorieStats(userId, endDateStr) {
     const stats = formatCalorieStats(calorieLogs, calorieGoals);
 
     let res = [];
-    let j = 0;
-    for (let i = 6; i >= 0; i++) {
-        const theDay = new Date(year, month, day-i);
+    let j = calorieGoals.length-1;
+    for (let i = 6; i >= 0; i--) {
+        let theDay = new Date(endDateStr);
+        theDay.setDate(theDay.getDate() - i);
         const key = theDay.toLocaleDateString();
         if (key in stats) {
             res.push(stats[key]);
         }  else {
-            while (j < calorieGoals.length - 1 && calorieGoals[j+1].createdAt < theDay) {
-                j++;
+            while (j > 0  && calorieGoals[j].createdAt > theDay) {
+                j--;
             }
             res.push({
                 date: FormatDate(theDay),
                 calories: 0,
-                calorieGoal: calorieGoals[j].calories,
+                calorieGoal: calorieGoals[j].goal,
             })
         }
     }
+    return res
 }
 
 
@@ -154,7 +159,7 @@ function formatCalorieStats(calorieLogs, calorieGoals) {
     let i = calorieLogs.length - 1;
     let j = calorieGoals.length - 1;
     for ( ; i  >= 0; i--) {
-        const key = calorieLogs[i].toLocaleDateString();
+        const key = calorieLogs[i].createdAt.toLocaleDateString();
         if (key in res) {
             res[key].calories += calorieLogs[i].calories;
         } else {
@@ -164,7 +169,7 @@ function formatCalorieStats(calorieLogs, calorieGoals) {
             let stat = {
                 date: FormatDate(calorieLogs[i].createdAt),
                 calories: calorieLogs[i].calories,
-                calorieGoal: calorieGoals[j].calories,
+                calorieGoal: calorieGoals[j].goal,
             }
             res[key] = stat;
         }

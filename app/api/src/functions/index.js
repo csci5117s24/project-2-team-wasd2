@@ -29,6 +29,7 @@ async function authenticate(request) {
         token = JSON.parse(Buffer.from(auth_header, 'base64').toString());
         console.log(token); 
     }
+    token = {userId: "ee985242d8e37a97d7eff27a807bdcb3"} // fixme: delete
     return token;
 }
 
@@ -123,7 +124,7 @@ app.http('addExerciseLog', {
             title: exercise.title,
             description: exercise.description,
             calories: exercise.calories,
-            timestamp: new Date(exercise.timestamp)
+            createdAt: new Date()
         };
 
         try {
@@ -235,12 +236,15 @@ app.http('addCalorieLog', {
         }
         const data = await request.json();
         if (!data || !data.exerciseId) {
-            return {status: 400 }
+            return {status: 400, jsonBody: {message: "invalid parameter"}}
         }
-        const calorieLogId = await AddCalorieLog(token.userId, data.exerciseId);
+        const res = await AddCalorieLog(token.userId, data.exerciseId);
+        if (res === -1) {
+            return { status: 400, jsonBody: {message: "no permission"}}
+        }
         return {
             status: 200, 
-            jsonBody: {id: calorieLogId}
+            jsonBody: {id: res}
         }
     }
 });
@@ -255,13 +259,23 @@ app.http('deleteCalorieLog', {
             return { status: 401 }
         }
         const data = await request.json();
-        if (!data || !data.id) {
+        if (!data || !data.exerciseId) {
             return {status: 400 }
         }
-        const calorieLogId = await DeleteCalorieLog(token.userId, data.id);
+        let dateStr = data.dateStr;
+        if (!dateStr) {
+            dateStr = new Date().toLocaleDateString();
+        }
+        const res = await DeleteCalorieLog(token.userId, data.exerciseId, dateStr);
+        if (res !==  0) {
+            return {
+                status: 400,
+                jsonBody: {message: "invalid parameter"}
+            }
+        }
         return {
             status: 200, 
-            jsonBody: {id: calorieLogId}
+            jsonBody: {}
         }
     }
 });
@@ -275,11 +289,33 @@ app.http('getCalorieLogs', {
         if (!token) {
             return { status: 401 }
         }
-        let queryDay = request.params.get("dateStr");
+        let queryDay = request.query.get("dateStr");
         if (!queryDay) {
             queryDay = new Date().toLocaleDateString();
         }
+        console.log(queryDay);
         const logs = await GetCalorieLogs(token.userId, queryDay);
+        return {
+            status: 200, 
+            jsonBody: {calorieLogs: logs}
+        }
+    }
+});
+
+app.http('getWeeklyCalorieStats', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "calorie/stats",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401 }
+        }
+        let endDateStr = request.query.get("endDate");
+        if (!endDateStr) {
+            endDateStr = new Date().toLocaleDateString();
+        }
+        const logs = await GetWeeklyCalorieStats(token.userId, endDateStr);
         return {
             status: 200, 
             jsonBody: {calorieLogs: logs}
@@ -1009,36 +1045,36 @@ app.http('getWaterLogStats', {
 })
 
 
-app.http('updateCalorieGoal', {
-    methods: ["PUT"],
-    authLevel: "anonymous",
-    route: "calorieGoal/update",
-    handler: async (request, context) => {
-        const token = await authenticate(request);
-        if (!token) {
-            console.log("Authentication failed");
-            return { status: 401, jsonBody: { error: "Unauthorized access" } };
-        }
+// app.http('updateCalorieGoal', {
+//     methods: ["PUT"],
+//     authLevel: "anonymous",
+//     route: "calorieGoal/update",
+//     handler: async (request, context) => {
+//         const token = await authenticate(request);
+//         if (!token) {
+//             console.log("Authentication failed");
+//             return { status: 401, jsonBody: { error: "Unauthorized access" } };
+//         }
 
-        const userId = token.userId;
-        const { workoutId, caloriesBurned } = await request.json();
+//         const userId = token.userId;
+//         const { workoutId, caloriesBurned } = await request.json();
 
-        if (!workoutId || typeof caloriesBurned !== 'number' || caloriesBurned <= 0) {
-            return {
-                status: 400,
-                jsonBody: { message: "Invalid parameter, missing or incorrect fields." }
-            };
-        }
+//         if (!workoutId || typeof caloriesBurned !== 'number' || caloriesBurned <= 0) {
+//             return {
+//                 status: 400,
+//                 jsonBody: { message: "Invalid parameter, missing or incorrect fields." }
+//             };
+//         }
 
-        const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const result = await client.db("tracker").collection("calorie_goal").updateOne({userId: userId}, {$inc: {calorieGoal: -caloriesBurned}});
-        client.close();
+//         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
+//         const result = await client.db("tracker").collection("calorie_goal").updateOne({userId: userId}, {$inc: {calorieGoal: -caloriesBurned}});
+//         client.close();
 
-        return {
-            status: 200,
-            jsonBody: { message: "Calorie goal updated successfully" }
-        };
+//         return {
+//             status: 200,
+//             jsonBody: { message: "Calorie goal updated successfully" }
+//         };
         
-    }
+//     }
     
-})
+// })
