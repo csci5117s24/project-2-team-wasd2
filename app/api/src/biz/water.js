@@ -35,7 +35,7 @@ async function getLast7DayLog(userId, unit) {
     let endDate = new Date(today);
     endDate.setDate(endDate.getDate()+1);
     let startDate = new Date(today);
-    startDate.setDate(startDate.getDate() -7);
+    startDate.setDate(startDate.getDate() -6); // fixme: phoebe
     const waterLogs = await FindFromMongo("water", {userId: userId, createDate: {$gte: startDate, $lt: endDate}});
 
     function keyFunc(date) {
@@ -146,7 +146,7 @@ async function getLast12MonthLog(userId, unit) {
 function calStat(waterLogs, keyFunc, targetUnit) {
     let res = {};
     for (let i = 0; i < waterLogs.length; i++) {
-        const value = waterLogs[i].value;
+        let value = waterLogs[i].value;
         if (waterLogs[i].unit !== targetUnit) {
             value = transToUnit(value, targetUnit);
         } 

@@ -44,7 +44,7 @@ export function PageWeightGoal() {
 
     async function setWeightData() {
 		let dl = deadline.target && deadline.target.value
-		setWeightGoal({...goal, deadline: dl});
+		await setWeightGoal({...goal, deadline: dl});
 		window.location.href = "/weight";
     }
 
