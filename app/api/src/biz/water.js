@@ -1,4 +1,5 @@
 const { FindFromMongo } = require('../common/mongo');
+const { FormatDate } = require('../common/utils');
 
 
 module.exports = {
@@ -8,7 +9,7 @@ module.exports = {
 
 const defaultUnit = "oz";
 
-async function GetWaterLogStatistics(userId, rangeType) {
+async function GetWaterLogStatistics(userId, rangeType, endDateStr) {
     const waterGoal = await FindFromMongo("water_goal", {userId: userId});
     let goalUnit;
     if (!waterGoal || waterGoal.length == 0) {
@@ -18,38 +19,38 @@ async function GetWaterLogStatistics(userId, rangeType) {
     }
     var res = [];
     if (rangeType === "days") {
-        res = await getLast7DayLog(userId, goalUnit);
+        res = await getLast7DayLog(userId, goalUnit, endDateStr);
     } else if (rangeType === "weeks") {
-        res = await getLast4WeekLog(userId, goalUnit);
+        res = await getLast4WeekLog(userId, goalUnit, endDateStr);
     } else if (rangeType === "months") {
-        res = await getLast12MonthLog(userId, goalUnit);
+        res = await getLast12MonthLog(userId, goalUnit, endDateStr);
     }
     return res;
 }
 
-const weekDays = ["Sun", "Mon", "Thu", "Wen", "Tru", "Fri", "Sat"];
+const weekDays = ["Sun", "Mon", "Thu", "Wed", "Tru", "Fri", "Sat"];
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-async function getLast7DayLog(userId, unit) {
-    const today = new Date().toLocaleDateString();
-    let endDate = new Date(today);
+async function getLast7DayLog(userId, unit, endDateStr) {
+    let endDate = new Date(endDateStr);
     endDate.setDate(endDate.getDate()+1);
-    let startDate = new Date(today);
-    startDate.setDate(startDate.getDate() -6); // fixme: phoebe
+    let startDate = new Date(endDateStr);
+    startDate.setDate(startDate.getDate() -6);
     const waterLogs = await FindFromMongo("water", {userId: userId, createDate: {$gte: startDate, $lt: endDate}});
 
     function keyFunc(date) {
-        return date.getDay(); 
+        return date.toLocaleDateString(); 
     }
     let stats = calStat(waterLogs, keyFunc, unit);
 
-    const firstDate = endDate.getDay();
     let res = [];
     for (let i = 0; i < 7; i++) {
-        const idx = (firstDate+i) % 7;
-        const value = stats[idx] ?? 0;
+        let theDay = new Date(startDate.toLocaleDateString());
+        theDay.setDate(theDay.getDate() + i);
+        const key = theDay.toLocaleDateString();
+        const value = stats[key] ?? 0;
         res.push({
-            label: weekDays[idx],
+            label: FormatDate(theDay),
             value: value
         })
     }
@@ -71,18 +72,17 @@ function dateDiffInDays(date1, date2) {
 function genWeeksLable(startDate) {
     let res = [];
     for (let i = 1; i <= 4; i++) {
-        const s = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDay()+(i-1)*7);
-        const e = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDay()+(i-1)*7+6);
+        const s = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()+(i-1)*7);
+        const e = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()+(i-1)*7+6);
         res.push(s.toLocaleDateString() + "-" + e.toLocaleDateString());
     }
     return res
 }
 
-async function getLast4WeekLog(userId, unit) {
-    const today = new Date().toLocaleDateString();
-    let endDate = new Date(today);
+async function getLast4WeekLog(userId, unit, endDateStr) {
+    let endDate = new Date(endDateStr);
     endDate.setDate(endDate.getDate()+1);
-    let startDate = new Date(today);
+    let startDate = new Date(endDateStr);
     startDate.setDate(startDate.getDate() -27);
     const waterLogs = await FindFromMongo("water", {userId: userId, createDate: {$gte: startDate, $lt: endDate}});
 
@@ -107,14 +107,14 @@ async function getLast4WeekLog(userId, unit) {
     }
 }
 
-async function getLast12MonthLog(userId, unit) {
-    const today = new Date().toLocaleDateString();
-    let endDate = new Date(today);
+async function getLast12MonthLog(userId, unit, endDateStr) {
+    // const today = new Date().toLocaleDateString();
+    let endDate = new Date(endDateStr);
     // the first day of next month
     endDate.setMonth(endDate.getMonth() + 1);
     endDate.setDate(1);
     // the day one year ahead endDate
-    let startDate = new Date(today);
+    let startDate = new Date(endDateStr);
     startDate.setMonth(startDate.getMonth() + 1);
     startDate.setDate(1);
     startDate.setFullYear(startDate.getFullYear()-1);

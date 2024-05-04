@@ -4,6 +4,7 @@ import PageContainer from "../components/PageContainer";
 import LiquidGuage from "../components/LiquidGauge";
 import styles from '../css/WorkoutForm.module.css';
 import { SendDelete, SendGet, SendUpdate, SendPost } from "../common/http";
+import ReactLoading from 'react-loading';
 
 export const WaterTrackerRoute = {
     path: "/water",
@@ -46,9 +47,11 @@ export function PageWaterTracker() {
     const [goal, setGoal] = useState({});
     const [achieved, setAchieved] = useState(0);
     const [waterLogs, setWaterLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchData() {
+            setLoading(true);
             const curGoal = await getWaterGoal();
             if (!curGoal) {
                 window.location.href = "/water/goal";
@@ -56,6 +59,7 @@ export function PageWaterTracker() {
             const curLogs = await getWaterLogs();
             const newAchieved = calAchieved(curLogs, curGoal);
             setGoal({value: curGoal.value, unit: curGoal.unit});
+            setLoading(false);
             setWaterLogs(curLogs);
             setAchieved(newAchieved);
         }
@@ -115,22 +119,24 @@ export function PageWaterTracker() {
                 <p className="motto">Hydrate to Elevate: Fuel Your Life with H<sub>2</sub>O!</p>
                 <img src="/quote-right.svg" alt="quote"></img>
             </div>
+            {loading ? <div className="center-items"><ReactLoading type="spokes" color="#836FFF" /></div> : 
             <div className={styles.container}>
-            <NavigationBar goal={goal}/>
-            <div className="columns">
-                <div className="column is-two-fifths">
-                    <LiquidGuage style={{ margin: 'auto' }}
-                            radius={75}
-                            value={achieved}/>
-                    <h1><span>{achieved}%</span> of your goal achieved</h1>
+                <NavigationBar goal={goal}/>
+                <h1 className="third-title">Your Water Logs for Today</h1>
+                <div className="columns">
+                    <div className="column is-two-fifths">
+                        <LiquidGuage style={{ margin: 'auto' }}
+                                radius={75}
+                                value={achieved}/>
+                        <h1><span>{achieved}%</span> of your goal achieved</h1>
+                    </div>
+                    
+                    <div className="column auto">
+                        <NewWaterLog unit={goal.unit} addWaterLog={addWaterLog}/>
+                    </div>
                 </div>
-                
-                <div className="column auto">
-                    <NewWaterLog unit={goal.unit} addWaterLog={addWaterLog}/>
-                </div>
-            </div>
-            <WaterLogList waterLogs={waterLogs} editLog={editLog} deleteLog={deleteLog}></WaterLogList>
-            </div>
+                <WaterLogList waterLogs={waterLogs} editLog={editLog} deleteLog={deleteLog}></WaterLogList>
+            </div>}
         </div>
     )
 }
