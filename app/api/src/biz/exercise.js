@@ -120,12 +120,15 @@ async function GetWeeklyCalorieStats(userId, endDateStr) {
     let endTime = new Date(endDateStr);
     endTime.setDate(endTime.getDate() + 1);
     const calorieLogs = await FindFromMongo(collectionCalorieLog, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
-    if (!calorieLogs) {
-        return [];
-    }
     let calorieGoals = await FindFromMongo(collectionCalorieGoal, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
     if (!calorieGoals || calorieGoals.length === 0) {
-        const latestGoal = await GetLatestCalorieGoal();
+        let latestGoal = await GetLatestCalorieGoal();
+        if (!latestGoal) {
+            latestGoal = {
+                goal: 0,
+                createdAt: new Date()
+            }
+        }
         calorieGoals = [latestGoal];
     }
 
