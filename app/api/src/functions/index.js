@@ -1,8 +1,11 @@
 const { app } = require('@azure/functions');
 const { MongoClient, ObjectID} = require('mongodb');
 const { FindByIDFromMongo, UpdateMongo, DeleteFromMongo, FindFromMongo } = require('../common/mongo');
-const {FormatWaterLogs, GetWaterLogStatistics} = require('../biz/water');
-const { GetExerciseLogs, AddExerciseLog, UpdateExerciseLog, DeleteExerciseLog, GetCalorieStatistics, SetWeeklyExerciseGoals, GetWeeklyExerciseGoals,UpdateWeeklyExerciseGoals} = require('../biz/exercise');
+const { FormatWaterLogs, GetWaterLogStatistics} = require('../biz/water');
+const { 
+    AddExerciseLog, UpdateExerciseLog, DeleteExerciseLog, 
+    SetDailyCalorieGoal, GetDailyCalorieGoal, AddCalorieLog, DeleteCalorieLog,GetCalorieLogs, GetWeeklyCalorieStats,
+} = require('../biz/exercise');
 
 
 app.http('ping', {
@@ -28,6 +31,7 @@ async function authenticate(request) {
     }
     return token;
 }
+
 app.http('getExerciseLogs', {
     methods: ["GET"], 
     authLevel: "anonymous",
@@ -182,145 +186,248 @@ app.http('deleteExerciseLog', {
     }
 });
 
-app.http('updateCalorieGoal', {
-    methods: ["POST"],
-    authLevel: "anonymous",
-    route: "calorieGoal/update",
-    handler: async (request, context) => {
-        const token = await authenticate(request);
-        if (!token) {
-            console.log("Authentication failed");
-            return { status: 401, jsonBody: { error: "Unauthorized access" } };
-        }
-
-        const userId = token.userId;
-        const { workoutId, caloriesBurned } = await request.json();
-
-        if (!workoutId || typeof caloriesBurned !== 'number' || caloriesBurned <= 0) {
-            return {
-                status: 400,
-                jsonBody: { message: "Invalid parameter, missing or incorrect fields." }
-            };
-        }
-
-        try {
-            const today = new Date();
-            const weekStartDate = new Date(today.setDate(today.getDate() - today.getDay())).toISOString();
-            let [goals] = await FindFromMongo("weekly_goals", { userId, weekStartDate });
-
-            if (!goals) {
-                goals = {
-                    userId,
-                    weekStartDate,
-                    goals: { calorieGoal: 1000, workoutsLogged: [] }, 
-                    createdAt: new Date()
-                };
-                await InsertToMongo("weekly_goals", goals);
-            }
-
-            const updates = {
-                "$set": {
-                    "goals.calorieGoal": goals.goals.calorieGoal - caloriesBurned
-                },
-                "$push": {
-                    "goals.workoutsLogged": {
-                        workoutId,
-                        caloriesBurned,
-                        timestamp: new Date()
-                    }
-                }
-            };
-
-            await UpdateMongo("weekly_goals", goals._id, updates);
-
-            return {
-                status: 200,
-                jsonBody: { message: "Calorie goal updated successfully" }
-            };
-        } catch (error) {
-            console.error("Failed to update calorie goal:", error);
-            return {
-                status: 500,
-                jsonBody: { error: "Failed to update calorie goal" }
-            };
-        }
-    }
-});
-app.http('getCalorieGoal', {
-    methods: ["GET"],
-    authLevel: "anonymous",
-    route: "calorieGoal",
-    handler: async (request, context) => {
-        const token = await authenticate(request);
-        if (!token) {
-            return {
-                status: 401,
-                jsonBody: { error: "Unauthorized access" }
-            };
-        }
-
-        const userId = token.userId;
-        const weekStartDate = request.query.weekStartDate;
-
-        try {
-            const goals = await FindFromMongo("weekly_goals", { userId, weekStartDate });
-            return {
-                status: 200,
-                jsonBody: goals.length > 0 ? goals[0] : "No goals found for the specified week."
-            };
-        } catch (error) {
-            return {
-                status: 500,
-                jsonBody: { error: "Failed to fetch calorie goals due to an internal error" }
-            };
-        }
-    }
-});
-
 app.http('setCalorieGoal', {
-    methods: ["POST"],
+    methods: ["POST"], 
     authLevel: "anonymous",
-    route: "calorieGoal/set",
+    route: "calorie/goal",
     handler: async (request, context) => {
         const token = await authenticate(request);
         if (!token) {
-            return {
-                status: 401,
-                jsonBody: { error: "Unauthorized access" }
-            };
+            return { status: 401 };
         }
-
-        const userId = token.userId;
-        const { weekStartDate, calorieGoal } = await request.json();
-
-        if (!weekStartDate || calorieGoal === undefined) {
-            return {
-                status: 400,
-                jsonBody: { message: "Invalid parameter, missing one of the required fields." }
-            };
+        const data = await request.json();
+        if (!data || !data.goal) {
+            return { status: 400 };
         }
-
-        try {
-            const newGoal = {
-                userId,
-                weekStartDate,
-                goals: { calorieGoal, workoutsLogged: [] },
-                createdAt: new Date()
-            };
-            await InsertToMongo("weekly_goals", newGoal);
-
-            return {
-                status: 200,
-                jsonBody: "New calorie goal set successfully"
-            };
-        } catch (error) {
-            return {
-                status: 500,
-                jsonBody: { error: "Failed to set new calorie goal due to an internal error" }
-            };
+        await SetDailyCalorieGoal(token.userId, data.goal);
+        return {
+            status: 200, 
+            jsonBody: {}
         }
     }
 });
+
+app.http('getCalorieGoal', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "calorie/goal",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401 };
+        }
+        const goal = await GetDailyCalorieGoal(token.userId);
+        return {
+            status: 200, 
+            jsonBody: { goal }
+        }
+    }
+});
+
+app.http('addCalorieLog', {
+    methods: ["POST"], 
+    authLevel: "anonymous",
+    route: "calorie/log",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401 }
+        }
+        const data = await request.json();
+        if (!data || !data.exerciseId) {
+            return {status: 400 }
+        }
+        const calorieLogId = await AddCalorieLog(token.userId, data.exerciseId);
+        return {
+            status: 200, 
+            jsonBody: {id: calorieLogId}
+        }
+    }
+});
+
+app.http('deleteCalorieLog', {
+    methods: ["DELETE"], 
+    authLevel: "anonymous",
+    route: "calorie/log",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401 }
+        }
+        const data = await request.json();
+        if (!data || !data.id) {
+            return {status: 400 }
+        }
+        const calorieLogId = await DeleteCalorieLog(token.userId, data.id);
+        return {
+            status: 200, 
+            jsonBody: {id: calorieLogId}
+        }
+    }
+});
+
+app.http('getCalorieLogs', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "calorie/logs",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401 }
+        }
+        let queryDay = request.params.get("dateStr");
+        if (!queryDay) {
+            queryDay = new Date().toLocaleDateString();
+        }
+        const logs = await GetCalorieLogs(token.userId, queryDay);
+        return {
+            status: 200, 
+            jsonBody: {calorieLogs: logs}
+        }
+    }
+});
+
+
+// app.http('updateCalorieGoal', {
+//     methods: ["POST"],
+//     authLevel: "anonymous",
+//     route: "calorieGoal/update",
+//     handler: async (request, context) => {
+//         const token = await authenticate(request);
+//         if (!token) {
+//             console.log("Authentication failed");
+//             return { status: 401, jsonBody: { error: "Unauthorized access" } };
+//         }
+
+//         const userId = token.userId;
+//         const { workoutId, caloriesBurned } = await request.json();
+
+//         if (!workoutId || typeof caloriesBurned !== 'number' || caloriesBurned <= 0) {
+//             return {
+//                 status: 400,
+//                 jsonBody: { message: "Invalid parameter, missing or incorrect fields." }
+//             };
+//         }
+
+//         try {
+//             const today = new Date();
+//             const weekStartDate = new Date(today.setDate(today.getDate() - today.getDay())).toISOString();
+//             let [goals] = await FindFromMongo("weekly_goals", { userId, weekStartDate });
+
+//             if (!goals) {
+//                 goals = {
+//                     userId,
+//                     weekStartDate,
+//                     goals: { calorieGoal: 1000, workoutsLogged: [] }, 
+//                     createdAt: new Date()
+//                 };
+//                 await InsertToMongo("weekly_goals", goals);
+//             }
+
+//             const updates = {
+//                 "$set": {
+//                     "goals.calorieGoal": goals.goals.calorieGoal - caloriesBurned
+//                 },
+//                 "$push": {
+//                     "goals.workoutsLogged": {
+//                         workoutId,
+//                         caloriesBurned,
+//                         timestamp: new Date()
+//                     }
+//                 }
+//             };
+
+//             await UpdateMongo("weekly_goals", goals._id, updates);
+
+//             return {
+//                 status: 200,
+//                 jsonBody: { message: "Calorie goal updated successfully" }
+//             };
+//         } catch (error) {
+//             console.error("Failed to update calorie goal:", error);
+//             return {
+//                 status: 500,
+//                 jsonBody: { error: "Failed to update calorie goal" }
+//             };
+//         }
+//     }
+// });
+
+// app.http('getCalorieGoal', {
+//     methods: ["GET"],
+//     authLevel: "anonymous",
+//     route: "calorieGoal",
+//     handler: async (request, context) => {
+//         const token = await authenticate(request);
+//         if (!token) {
+//             return {
+//                 status: 401,
+//                 jsonBody: { error: "Unauthorized access" }
+//             };
+//         }
+
+//         const userId = token.userId;
+//         const weekStartDate = request.query.weekStartDate;
+
+//         try {
+//             const goals = await FindFromMongo("weekly_goals", { userId, weekStartDate });
+//             return {
+//                 status: 200,
+//                 jsonBody: goals.length > 0 ? goals[0] : "No goals found for the specified week."
+//             };
+//         } catch (error) {
+//             return {
+//                 status: 500,
+//                 jsonBody: { error: "Failed to fetch calorie goals due to an internal error" }
+//             };
+//         }
+//     }
+// });
+
+// app.http('setCalorieGoal', {
+//     methods: ["POST"],
+//     authLevel: "anonymous",
+//     route: "calorieGoal/set",
+//     handler: async (request, context) => {
+//         const token = await authenticate(request);
+//         if (!token) {
+//             return {
+//                 status: 401,
+//                 jsonBody: { error: "Unauthorized access" }
+//             };
+//         }
+
+//         const userId = token.userId;
+//         const { weekStartDate, calorieGoal } = await request.json();
+
+//         if (!weekStartDate || calorieGoal === undefined) {
+//             return {
+//                 status: 400,
+//                 jsonBody: { message: "Invalid parameter, missing one of the required fields." }
+//             };
+//         }
+
+//         try {
+//             const newGoal = {
+//                 userId,
+//                 weekStartDate,
+//                 goals: { calorieGoal, workoutsLogged: [] },
+//                 createdAt: new Date()
+//             };
+//             await InsertToMongo("weekly_goals", newGoal);
+
+//             return {
+//                 status: 200,
+//                 jsonBody: "New calorie goal set successfully"
+//             };
+//         } catch (error) {
+//             return {
+//                 status: 500,
+//                 jsonBody: { error: "Failed to set new calorie goal due to an internal error" }
+//             };
+//         }
+//     }
+// });
 
 
 app.http('getWaterLogs', {
@@ -356,8 +463,6 @@ app.http('getWaterLogs', {
         }
     }
 })
-
-
 
 
 app.http('getWeightLogs', {
