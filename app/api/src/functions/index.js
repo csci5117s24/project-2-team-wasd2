@@ -363,7 +363,7 @@ app.http('getWaterLogs', {
 app.http('getWeightLogs', {
     methods: ["GET"], 
     authLevel: "anonymous",
-    route: "weightlog", 
+    route: "weight", 
     handler: async (request, context) => {
         // take care of auth
         const token = await authenticate(request);
@@ -374,7 +374,7 @@ app.http('getWeightLogs', {
         }
         const userId = token.userId; 
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const weightlog = await client.db("tracker").collection("weight").find({userId: userId}).toArray();
+        const weightlog = await client.db("tracker").collection("weightlog").find({userId: userId}).toArray();
         client.close();
 
         console.log(weightlog);
@@ -401,7 +401,7 @@ app.http('getWeightLog', {
 
         if (ObjectID.isValid(id)) {
             const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-            const weightlog = await client.db("tracker").collection("weight").findOne({userId: userId, _id: ObjectID(id)});
+            const weightlog = await client.db("tracker").collection("weightlog").findOne({userId: userId, _id: ObjectID(id)});
             client.close();
 
             if (waterlog.matchedCount === 0) {
@@ -441,11 +441,30 @@ app.http('postWeightGoal', {
             }
         }
         const userId = token.userId;
-        const goal = request.body ?? {}; // need to figure out what the frontend body looks like to create payload
+        const goal = await request.json();
+		console.log(goal)
 
-        const payload = {userId:userId, goal:goal};
+		if (!goal || !goal.value || !goal.unit || !goal.deadline) {
+            return {
+                status: 400,
+                jsonBody: {message: "invalid parameter"}
+            }
+        }
+
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const result = await client.db("tracker").collection("weight").insertOne(payload);
+        const existingGoal = await client.db("tracker").collection("weight_goal").findOne({userId: userId});
+        if (existingGoal) {
+            const result = await client.db("tracker").collection("weight_goal").updateOne({userId: userId}, {$set: {value: goal.value, unit: goal.unit, deadline: goal.deadline}});
+        } else {
+			const payload = {
+				userId: userId, 
+				value: goal.value,
+				unit: goal.unit,
+				deadline: goal.deadline,
+			};
+            const result = await client.db("tracker").collection("weight_goal").insertOne(payload);
+        }
+        
         client.close();
 
         return {
@@ -499,6 +518,28 @@ app.http('postWaterGoal', {
     }
 })
 
+app.http('getWeightGoal', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "weight/goal",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
+        const userId = token.userId;
+        const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
+        const goal = await client.db("tracker").collection("weight_goal").findOne({userId: userId});
+        client.close();
+
+        return {
+            status: 200, 
+            jsonBody: {goal: goal}
+        }
+    }
+})
 app.http('getWaterGoal', {
     methods: ["GET"], 
     authLevel: "anonymous",
@@ -555,26 +596,36 @@ app.http('postWeightLog', {
     authLevel: "anonymous",
     route: "weight",
     handler: async (request, context) => {
-        const token = await authenticate(request);
+		const token = await authenticate(request);
         if (!token) {
             return {
                 status: 401
             }
         }
-        const userId = token.userId;
-        const weight = request.body.weight ?? 0;
-        const unit = request.body.unit ?? "kg"; 
-        const picture = request.body.picture;
-        const date = request.body.timestamp;
 
-        const payload = {userId: userId, weight:weight, timestamp:date, unit:unit, picture : picture};
+    const userId = token.userId;
+		const data = await request.json();
+
+		if (!data || !data.value || !data.unit || !data.picture || !data.timestamp) {
+            return {
+                status: 400,
+            }
+        }
+
+        const playload = {
+            userId: userId,
+            value: data.value,
+            unit: data.unit,
+            timestamp: data.timestamp,
+			picture: data.picture
+        }
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const result = await client.db("tracker").collection("weight").insertOne(payload);
+        const result = await client.db("tracker").collection("weightlog").insertOne(playload);
         client.close();
 
         return {
-            status: 200, 
-            jsonBody: {weight: weight, unit: unit, date: date,picture: picture}
+            status: 200,
+            jsonBody: {id: result.insertedId}
         }
     }
 })
@@ -598,7 +649,7 @@ app.http('postWorkoutLog', {
         const goal = request.body.goal ?? 0;
         const payload = {userId: userId,timestamp:timestamp, title:title, description: description,calories: calories,goal:goal};
         const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-        const result = await client.db("tracker").collection("weight").insertOne(payload);
+        const result = await client.db("tracker").collection("weightlog").insertOne(payload);
         client.close();
 
         return {
@@ -713,13 +764,10 @@ app.http('deleteWaterLog', {
         }
     }
 })
-
-
-
-app.http('putWeightLog', {
-    methods: ["PUT"], 
+app.http('deleteWeightLog', {
+    methods: ["DELETE"], 
     authLevel: "anonymous",
-    route: "weight/{id}",
+    route: "weight",
     handler: async (request, context) => {
         const token = await authenticate(request);
         if (!token) {
@@ -728,15 +776,81 @@ app.http('putWeightLog', {
             }
         }
         const userId = token.userId;
+        const data = await request.json();
+
+        if (!data || !data._id) {
+            return {
+                status: 400
+            }
+        }
+        const id = data._id;
+        const weightLog = await FindByIDFromMongo("weightlog", id);
+        if (!weightLog || weightLog.userId !== userId) {
+            return {
+                status: 400,
+            }
+        }
+        await DeleteFromMongo("weightlog", id);
+        return {
+            status: 200, 
+            jsonBody: {}
+        }
+    }
+})
+
+
+app.http('putWeightLog', {
+    methods: ["PUT"], 
+    authLevel: "anonymous",
+    route: "weight",
+    handler: async (request, context) => {
+		const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
+        const userId = token.userId;
+        const data = await request.json();
+		console.log("::: put weight :::")
+		console.log(data)
+        if (!data || !data._id || !data.value || !data.unit || !data.picture) {
+            console.log("invalid parameter");
+            return {
+                status: 400,
+            }
+        }
+        const id = data._id;
+
+        const weightLog = await FindByIDFromMongo("weightlog", id);
+        if (!weightLog || weightLog.userId !== userId) {
+            return {
+                status: 400,
+            }
+        }
+        await UpdateMongo("weightlog", id, {"value": data.value, "unit": data.unit, "picture": data.picture});
+        return {
+            status: 200, 
+            jsonBody: {id: id, value: data.value, unit: data.unit, picture: data.picture}
+		}
+        
+		/*
+        const token = await authenticate(request);
+        if (!token) {
+            return {
+                status: 401
+            }
+        }
+        const userId = token.userId;
         const id = request.params.id;
-        const weight = request.body.weight ?? 0;
+        const value = request.body.value ?? 0;
         const unit = request.body.unit ?? "kg";  
-        const date = request.body.timestamp;
+        const timestamp = request.body.timestamp ?? Date.now();
         const picture = request.body.picture;
 
         if (ObjectID.isValid(id)) {
             const client = await MongoClient.connect(process.env.AZURE_MONGO_DB);
-            const result = await client.db("tracker").collection("weight").updateOne({userId: userId, _id: new ObjectID(id)}, {$set: weight, date, unit,picture});
+            const result = await client.db("tracker").collection("weightlog").updateOne({userId: userId, _id: new ObjectID(id)}, {$set: unit, value, timestamp, picture});
             client.close();
 
             if (result.matchedCount === 0) {
@@ -759,7 +873,7 @@ app.http('putWeightLog', {
                     message: "invalid id for weight log"
                 }
             }
-        }
+        }*/
     }
 })
 

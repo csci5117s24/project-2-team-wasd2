@@ -4,3 +4,12 @@
 	box-shadow: 0 0 15px rgb(50, 50, 50);
 	border-radius: 8px;
 }
+
+.weight-modal .card {
+	max-width: 100%;
+	padding-left: 5%;
+}
+
+.weightLogItem {
+	cursor: pointer;
+}

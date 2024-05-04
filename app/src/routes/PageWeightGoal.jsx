@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageContainer from "../components/PageContainer";
-import { UpdateWeightGoal } from "../common/mock_data";
 import { InputWithTwoUnits } from '../components/InputWithTwoUnits';
+import { SendGet, SendPost } from "../common/http";
 
 
 export const WeightGoalRoute = {
@@ -17,13 +17,35 @@ export const WeightGoalRoute = {
 
 const kgToLbsCoefficient = 2.20462;
 
+async function getWeightGoal() {
+    const goal = await SendGet("/api/weight/goal", {});
+    return goal.goal;
+}
+async function setWeightGoal(goal) {
+	console.log("Set Weight goal")
+	console.log(goal)
+    await SendPost("/api/weight/goal", goal);
+}
+
 export function PageWeightGoal() {
     const [current, setCurrent] = useState({value: 0, unit: "kg"});
     const [goal, setGoal] = useState({value: 0, unit: "kg"});
-    const [deadline, setDeadline] = useState({value: undefined, unit: "ml"});
+    const [deadline, setDeadline] = useState(0);
+	let g = null
+
+    useEffect(() => {
+        async function fetchData() {
+            const curGoal = await getWeightGoal();
+			g = curGoal;
+			console.log(curGoal)
+        }
+        fetchData();
+    }, []);
 
     async function setWeightData() {
-        UpdateWeightGoal(goal.value, deadline.value);
+		let dl = deadline.target && deadline.target.value
+		setWeightGoal({...goal, deadline: dl});
+		window.location.href = "/weight";
     }
 
     return (
