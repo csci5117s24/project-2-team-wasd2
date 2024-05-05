@@ -12,7 +12,10 @@ import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { Chart, registerables } from 'chart.js';
+import { Link } from "react-router-dom";
 Chart.register(...registerables, annotationPlugin);
+
+const oneDayInMilliSec = 1000 * 24 * 60 * 60;
 
 export const WeightTrackerRoute = {
     path: "/weight",
@@ -70,6 +73,12 @@ export function PageWeightTracker() {
         fetchData();
     }, []);
 
+	const loggedToday = weightLogs.length != 0 && (weightLogs[weightLogs.length-1].timestamp >= Date.now() - oneDayInMilliSec);
+	let daysLeft = "-";
+	if (goal.deadline !== 0) {
+		daysLeft = Math.floor((new Date(goal.deadline) - new Date()) / (oneDayInMilliSec)) + 1;
+	}
+
     function editLog(data, picture) {
 		let wls = [...weightLogs]
         var idx = wls.findIndex(wl => wl._id === data._id);
@@ -113,15 +122,23 @@ export function PageWeightTracker() {
                 <p className="motto">Balance for Better: Choose Health!</p>
                 <img src="/quote-right.svg" alt="quote"></img>
             </div>
-            <button className="button is-primary" onClick={()=> setShowAddLog(true)}>Record Weight for Today</button>
+			<div className="weight-header">
+				<span>Goal: {goal.value ? "" + goal.value + " " + goal.unit : "0 kg" } </span>
+				<span style={{marginLeft:'2rem'}}> {daysLeft}  Days Left </span>
+				<br/>
+				<Link to="/weight/goal"> Edit Goal</Link>
+			</div>
+			<button className="button is-primary" style={{marginBottom: '1rem'}} onClick={()=> setShowAddLog(true)}>Record Weight for Today</button>
             {showAddLog && <WeightLogModal
                 showModal={showAddLog}
                 setShowModal={setShowAddLog}
-                weightLog={undefined} 
+                weightLog={loggedToday ? weightLogs[weightLogs.length - 1] : undefined} 
                 unit={goal.unit} 
-                addOrUpdateLog={addWeightLog}/>}
+                addOrUpdateLog={loggedToday ? editLog : addWeightLog}/>}
+			<div className="card section">
 			<LineChart logs={weightLogs} goal={goal}/>
             <WeightLogList weightLogs={weightLogs} editLog={editLog} deleteLog={deleteLog}/>
+			</div>
         </div>
     )
 }
@@ -151,8 +168,8 @@ function LogItem({log, editLog, deleteLog}) {
             <p>{log.value + log.unit}</p>
             { showBubble &&
                 <div className="one">
-                    <button className="button is-info" onClick={()=>setShowEditLog(true)}>Edit</button>
-                    <button className="button is-danger" onClick={()=>deleteLog(log._id)}>Delete</button>
+                    <button className="button is-info" style={{marginRight: '0.5rem'}} onClick={()=>setShowEditLog(true)}>Edit</button>
+                    <button className="button is-danger" style={{marginLeft: '0.5rem'}} onClick={()=>deleteLog(log._id)}>Delete</button>
                 </div> 
             }
             {showEditLog && <WeightLogModal 
@@ -269,7 +286,6 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
 }
 
 function LineChart({logs, goal}) {
-	console.log(logs)
 	let dates = []
 	for (var l of logs){
 		let d = new Date(l.timestamp);
@@ -283,9 +299,6 @@ function LineChart({logs, goal}) {
 			data: logs && logs.map(log => {
 				// Scale the units if they do not match up
 				if (log.unit !== goal.unit){
-					console.log('unmatch')
-					console.log(l)
-					console.log(goal.unit)
 					if (goal.unit === "kg"){
 						return log.value / kgToLbsCoefficient
 					} else {

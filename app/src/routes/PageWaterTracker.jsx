@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageContainer from "../components/PageContainer";
 import LiquidGuage from "../components/LiquidGauge";
-import styles from '../css/WorkoutForm.module.css';
 import { SendDelete, SendGet, SendUpdate, SendPost } from "../common/http";
 import ReactLoading from 'react-loading';
 
@@ -35,7 +34,6 @@ async function getWaterLogs() {
 }
 
 async function updateWaterLog(id, value, unit) {
-    console.log("update water log. id: ", id);
     await SendUpdate("/api/water" , {id: id, value: value, unit: unit});
 }
 
@@ -92,6 +90,9 @@ export function PageWaterTracker() {
     }
 
     async function deleteLog(id) {
+        if (!window.confirm("Are you sure you want to delete this log?")){
+			return
+		}
         deleteWaterLog(id);
         const newWaterLogs = waterLogs.filter(wl => wl._id !== id);
         const newAchieved = calAchieved(newWaterLogs, goal);
@@ -119,12 +120,12 @@ export function PageWaterTracker() {
                 <p className="motto">Hydrate to Elevate: Fuel Your Life with H<sub>2</sub>O!</p>
                 <img src="/quote-right.svg" alt="quote"></img>
             </div>
-            {loading ? <div className="center-items"><ReactLoading type="spokes" color="#836FFF" /></div> : 
-            <div className={styles.container}>
+            <h1 className="third-title">Record Your Water Intake for Today</h1>
+            {loading ? <div className="center-items"><ReactLoading type="bars" color="#836FFF" /></div> : 
+            <div className="card section ">
                 <NavigationBar goal={goal}/>
-                <h1 className="third-title">Your Water Logs for Today</h1>
-                <div className="columns">
-                    <div className="column is-two-fifths">
+                <div className="columns" >
+                    <div className="column is-half">
                         <LiquidGuage style={{ margin: 'auto' }}
                                 radius={75}
                                 value={achieved}/>
@@ -146,9 +147,9 @@ function NavigationBar({ goal}) {
     return (
         <div className="sub-nav">
             <img className="icon" src="/target.svg" alt="icon"></img>
-            <span style={{marginLeft: '1rem', marginRight: '1rem'}}>{"" + goal.value + " " + goal.unit }</span>
+            <span style={{ fontSize:'1.3rem', marginLeft: '1rem', marginRight: '1rem'}}>{"" + goal.value + " " + goal.unit }</span>
             <Link to="/water/goal">
-                <img className="functional-icon" src="/edit_fill.svg" alt="edit goal"/>
+                <div style={{ height:'1.5rem', width: '1.5rem', margin: '0.2rem'}} ><img src="/edit_fill.svg" alt="edit goal"/></div>
             </Link>
             <div className="calendar-icon">
                 <Link to="/water/calendar"><img className="icon" src="/calendar.svg" alt="calendar"/></Link>
@@ -208,7 +209,6 @@ function LogItem({log, editLog, deleteLog}) {
 function WaterLogModal({ showModal, setShowModal, waterLog, unit, addOrUpdateLog}) {
 
     const [data, setData] = useState({id: waterLog._id, value: waterLog.value, unit: waterLog.unit});
-    console.log("water log modal, water log: ", data);
 
     function handleInputChange(e) {
         var newValue = e.target.value;
@@ -227,7 +227,6 @@ function WaterLogModal({ showModal, setShowModal, waterLog, unit, addOrUpdateLog
     }
 
     function handleSubmit(data) {
-        console.log("update log data: ", data);
         addOrUpdateLog(data);
         setShowModal(false);
     }
@@ -283,7 +282,7 @@ function NewWaterLog({unit, addWaterLog}) {
                 <input className="input" type="text" value={value} onChange={e => handleInputChange(e)}></input> 
                 <span>{unit}</span>
             </div>
-            <button className="button new-water-log" onClick={() => handleSubmit(value)}>Drink More Water </button>
+            <button className="button new-water-log is-primary" onClick={() => handleSubmit(value)}>Drink More Water </button>
         </div>
     )
 }

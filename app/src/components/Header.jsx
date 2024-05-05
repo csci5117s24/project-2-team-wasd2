@@ -141,14 +141,11 @@ function UserInfo() {
 
     function login() {
         window.location.href = "/.auth/login/aadb2c";
-        // setAvtarUrl("https://avatars.githubusercontent.com/u/35808021?v=4");
     }
 
     function logout() {
         window.location.href = "/.auth/logout";
     }
-
-    console.log("username is ", username);
     return (
         <div className="user-info">
             {avtarUrl && <img className="avatar" src={avtarUrl} alt="avatar"/>}

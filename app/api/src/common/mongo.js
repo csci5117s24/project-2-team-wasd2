@@ -25,7 +25,6 @@ async function findFromMongo(collection, filters) {
 }
 
 async function findFromMongoWithSort(collection, filters, sortCond) {
-    console.log("find with sort: ", filters, sortCond);
     const client = await mongoClient.connect(process.env.AZURE_MONGO_DB);
     // fixme: error here
     const cursor = client.db(dbName).collection(collection).find(filters).sort(sortCond);
@@ -51,5 +50,5 @@ async function updateMongo(collection, id, updates ) {
 async function deleteFromMongo(collection, id) {
     const client = await mongoClient.connect(process.env.AZURE_MONGO_DB);
     const result = await client.db(dbName).collection(collection).deleteOne({_id: new ObjectId(id)});
-    return result.modifiedCount;
+    return result.deletedCount;
 }

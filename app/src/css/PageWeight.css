@@ -13,3 +13,15 @@
 .weightLogItem {
 	cursor: pointer;
 }
+
+.weight-header {
+	font-size: 1.5rem;
+	font-weight: bold;
+	margin: 1rem 0;
+}
+
+.weight-header a {
+	font-size: 1rem;
+	margin-left: 1rem;
+	color: var(--my-blue);
+}

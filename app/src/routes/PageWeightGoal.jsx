@@ -22,8 +22,6 @@ async function getWeightGoal() {
     return goal.goal;
 }
 async function setWeightGoal(goal) {
-	console.log("Set Weight goal")
-	console.log(goal)
     await SendPost("/api/weight/goal", goal);
 }
 
@@ -31,13 +29,12 @@ export function PageWeightGoal() {
     const [current, setCurrent] = useState({value: 0, unit: "kg"});
     const [goal, setGoal] = useState({value: 0, unit: "kg"});
     const [deadline, setDeadline] = useState(0);
-	let g = null
 
     useEffect(() => {
         async function fetchData() {
             const curGoal = await getWeightGoal();
-			g = curGoal;
-			console.log(curGoal)
+            setGoal({value: curGoal.value, unit: curGoal.unit});
+            setDeadline(curGoal.deadline);
         }
         fetchData();
     }, []);

@@ -24,23 +24,14 @@ function WorkoutList({  fetchTrigger }) {
 
     useEffect(() => {
         fetchWorkouts();  
-        const interval = setInterval(fetchWorkouts, 2000);  
-        return () => clearInterval(interval);  
+        // this will call API infinitely
+        // const interval = setInterval(fetchWorkouts, 2000);  
+        // return () => clearInterval(interval);  
     }, [fetchTrigger]);
 
     const handleDeleteWorkout = async (_id) => {
-        console.log("Deleting workout with ID:", _id);
-        try {
-            const result = await SendDelete(`/api/exercise/${_id}`);
-            if (result.status === 200) {
-                setWorkouts(currentWorkouts => currentWorkouts.filter(workout => String(workout._id) !== String(_id)));
-                console.log("Workout deleted successfully");
-            } else {
-                console.log("Failed to delete workout, status:", result.status);
-            }
-        } catch (error) {
-            console.error("Error deleting workout:", error);
-        }
+        SendDelete(`/api/exercise/${_id}`); // async delete
+        setWorkouts(workouts.filter(workout => String(workout._id) !== String(_id)));
     };
 
     const handleEditClick = (workout) => {
@@ -69,14 +60,8 @@ function WorkoutList({  fetchTrigger }) {
         };
     
         try {
-            const response = await SendUpdate(`/api/exercise/${editingId}`, updatedWorkout);
-            if (response.ok) {  
-                const result = await response.json(); 
-                console.log("Update successful", result);
-                fetchWorkouts();
-            } else {
-                console.error("Failed to update workout, status:", response.status);
-            }
+            await SendUpdate(`/api/exercise/${editingId}`, updatedWorkout);
+            fetchWorkouts();
             setEditingId(null);
         } catch (error) {
             console.error("Error processing the save operation:", error);
