@@ -1,0 +1,27 @@
+.item-container, .workout-item-container {
+    padding: 1rem;
+    height: max-content;
+}
+
+.card-content {
+    background-color: #F9E2AF;
+}
+
+.title-link {
+    font-size: 1.2rem;
+    margin-left: 1rem;
+}
+
+.title-link a {
+    color: var(--my-blue);
+}
+
+.calorie-goal {
+    font-size: 1.5rem;
+    margin: 1rem;
+}
+
+.calorie-goal button {
+    margin-left: 1rem;
+    text-decoration: underline;
+}

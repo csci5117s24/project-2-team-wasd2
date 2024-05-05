@@ -192,7 +192,6 @@ app.http('deleteExerciseLog', {
         }
 
         const deleteCount = await DeleteFromMongo("exercise_logs", logId);
-        console.log(deleteCount);
         if (deleteCount === 1) {
             return {
                 status: 200, 
@@ -279,14 +278,10 @@ app.http('deleteCalorieLog', {
             return { status: 401 }
         }
         const data = await request.json();
-        if (!data || !data.exerciseId) {
+        if (!data || !data.logId) {
             return {status: 400 }
         }
-        let dateStr = data.dateStr;
-        if (!dateStr) {
-            dateStr = new Date().toLocaleDateString();
-        }
-        const res = await DeleteCalorieLog(token.userId, data.exerciseId, dateStr);
+        const res = await DeleteCalorieLog(token.userId, data.logId);
         if (res !==  0) {
             return {
                 status: 400,

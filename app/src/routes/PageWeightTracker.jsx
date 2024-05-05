@@ -73,7 +73,7 @@ export function PageWeightTracker() {
         fetchData();
     }, []);
 
-	const loggedToday = weightLogs.length != 0 && (weightLogs[weightLogs.length-1].timestamp >= Date.now() - oneDayInMilliSec);
+	const loggedToday = weightLogs.length !== 0 && (weightLogs[weightLogs.length-1].timestamp >= Date.now() - oneDayInMilliSec);
 	let daysLeft = "-";
 	if (goal.deadline !== 0) {
 		daysLeft = Math.floor((new Date(goal.deadline) - new Date()) / (oneDayInMilliSec)) + 1;

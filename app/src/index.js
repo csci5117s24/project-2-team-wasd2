@@ -20,6 +20,7 @@ import { WorkOutFormRoute} from './routes/WorkoutForm';
 import { MainpageRoute } from './routes/PageMain';
 import {WorkoutCalendarRoute} from './routes/WorkoutChart'
 import Page404 from './routes/Page404';
+import { CalorieRoute } from './routes/PageCalorie';
 
 Chart.register(...registerables); // register char.js
 
@@ -36,7 +37,8 @@ const router = createBrowserRouter([
 	    WeightGoalRoute,
 	    WeightTrackerRoute,
       WorkOutFormRoute,
-      MainpageRoute
+      CalorieRoute,
+      MainpageRoute,
     ],
     errorElement: <Page404/>
   },
