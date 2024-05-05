@@ -95,16 +95,12 @@ async function GetCalorieLogs(userId, dateStr) {
     return logs;
 }
 
-async function DeleteCalorieLog(userId, exerciseId, dateStr) {
-    const startTime = new Date(dateStr);
-    let endTime = new Date(dateStr);
-    endTime.setHours(endTime.getHours() + 24);
-    const calorieLogs = await FindFromMongo(collectionCalorieLog, 
-        {userId: userId, exerciseId: exerciseId, createdAt: {$gte: startTime, $lt: endTime}});
-    if (!calorieLogs || calorieLogs.length === 0) {
+async function DeleteCalorieLog(userId, logId) {
+    const calorieLog = await FindByIDFromMongo(collectionCalorieLog, logId);
+    if (!calorieLog || calorieLog.userId !== userId) {
         return -1;
     }
-    await DeleteFromMongo(collectionCalorieLog, calorieLogs[calorieLogs.length-1]._id);
+    await DeleteFromMongo(collectionCalorieLog, logId);
     return 0;
 }
 

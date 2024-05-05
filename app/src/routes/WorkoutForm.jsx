@@ -10,7 +10,7 @@ export const WorkOutFormRoute = {
     element: <PageContainer></PageContainer>,
     children: [
         {
-            path: "/exercise",
+            path: "/exercise/workout",
             element: <WorkoutForm/>
         }
     ]

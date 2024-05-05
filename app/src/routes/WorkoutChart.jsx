@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import PageContainer from "../components/PageContainer";
+import { SendGet } from '../common/http';
 
 
 export const WorkoutCalendarRoute = {
@@ -16,6 +17,9 @@ export const WorkoutCalendarRoute = {
 }
 
 export default function WorkoutChart () {
+    const today = new Date();
+    const [endDay, setEndDay] = useState(new Date());
+
     // Initial state setup for a week's data
     const initialData = [
         { day: 'Monday', consumed: 0, goal: 2000 },
@@ -28,6 +32,38 @@ export default function WorkoutChart () {
     ];
     const [days, setDays] = useState(initialData);
 
+    async function getStats(endDate) {
+        const result = await SendGet("/api/calorie/stats", {endDate: endDate.toLocaleDateString()});
+        const stats = result.stats.map((stat) => {return {day: stat.date, goal: stat.calorieGoal, consumed: stat.calories}});
+        // setDays(stats);
+        return stats;
+    }
+
+    useEffect(() => {
+        async function fetchData() {
+            const stats = await getStats(endDay);
+            setDays(stats);
+        }
+        fetchData();
+    }, [])
+
+    async function handleClickPre() {
+        let newEndDate = endDay;
+        newEndDate.setDate(newEndDate.getDate() - 7);
+        const stats = await getStats(newEndDate);
+        setEndDay(newEndDate);
+        setDays(stats);
+    }
+
+    async function handleClickNext() {
+        let newEndDate = endDay;
+        newEndDate.setDate(newEndDate.getDate() + 7);
+        const stats = await getStats(newEndDate);
+        setEndDay(newEndDate);
+        setDays(stats);
+    }
+
+    
     // Handle changes in calorie input
     function handleCalorieInput(dayIndex, consumed) {
         const newDays = days.map((day, index) => {
@@ -84,8 +120,8 @@ export default function WorkoutChart () {
 
     return (
         <div>
-            <h1>Weekly Calorie Tracker</h1>
-            {days.map((day, index) => (
+            <h1 className='primary-title'>Weekly Calorie Tracker</h1>
+            {/* {days.map((day, index) => (
                 <div key={index}>
                     <div>{day.day}</div>
                     <input
@@ -101,8 +137,13 @@ export default function WorkoutChart () {
                         onChange={(e) => handleGoalInput(index, e.target.value)}
                     />
                 </div>
-            ))}
+            ))} */}
             <Line data={data} options={options} />
+            <div className="h-container">
+                    <button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickPre}> pre </button>
+                    {endDay < today &&
+                    <button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickNext}> next </button>}
+            </div>
         </div>
     );
 }
