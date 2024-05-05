@@ -145,11 +145,9 @@ app.http('addExerciseLog', {
 
 
 
-
-
 app.http('updateExerciseLog', {
-    methods: ["PUT"], 
-    authLevel: "anonymous",
+    methods: ["PUT"],
+    authLevel: "anonymous", 
     route: "exercise/{id}",
     handler: async (request, context) => {
         const token = await authenticate(request);
@@ -157,31 +155,62 @@ app.http('updateExerciseLog', {
             return { status: 401 };
         }
         const userId = token.userId;
-        const { title, description, calories } = request.body;
+        const data = await request.json();
+        if (!data || !data.title || !data.description || !data.calories) {
+            console.log("Invalid parameters");
+            return { status: 400, jsonBody: { error: "Missing one of the required fields: title, description, or calories." } };
+        }
         const logId = request.params.id;
-        const updates = { title, description, calories };
-        const updated = await UpdateExerciseLog(logId, updates);
+
+        const exerciseLog = await FindByIDFromMongo("exercise_logs", logId);
+        if (!exerciseLog || exerciseLog.userId !== userId) {
+            return { status: 404, jsonBody: { error: "No such exercise log found or you do not have permission to update it." } };
+        }
+
+        const updates = { title: data.title, description: data.description, calories: data.calories };
+        const updateResult = await UpdateMongo("exercise_logs", logId, updates);
+        if (updateResult.modifiedCount === 0) {
+            return { status: 304, jsonBody: { message: "No changes were made to the exercise log." } }; 
+        }
+
         return {
             status: 200, 
-            jsonBody: { updated }
-        }
+            jsonBody: { message: "Exercise log updated successfully.", id: logId, updates }
+        };
     }
 });
 
 app.http('deleteExerciseLog', {
     methods: ["DELETE"], 
-    authLevel: "anonymous",
+    authLevel: "anonymous", 
     route: "exercise/{id}",
     handler: async (request, context) => {
         const token = await authenticate(request);
         if (!token) {
-            return { status: 401 };
+            return { status: 401, jsonBody: { message: "Authentication required" } };
         }
+        const userId = token.userId;
         const logId = request.params.id;
-        const deleted = await DeleteExerciseLog(logId);
-        return {
-            status: 200, 
-            jsonBody: { deleted }
+
+        const exerciseLog = await FindByIDFromMongo("exercise_logs", logId);
+        if (!exerciseLog) {
+            return { status: 404, jsonBody: { message: "Exercise log not found." } };
+        }
+        if (exerciseLog.userId !== userId) {
+            return { status: 403, jsonBody: { message: "Unauthorized to delete this exercise log." } };
+        }
+
+        const deleteCount = await DeleteFromMongo("exercise_logs", logId);
+        if (deleteCount === 1) {
+            return {
+                status: 200, 
+                jsonBody: { message: "Exercise log deleted successfully." }
+            };
+        } else {
+            return {
+                status: 500,
+                jsonBody: { message: "Failed to delete exercise log." }
+            };
         }
     }
 });
