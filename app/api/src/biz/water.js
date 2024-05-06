@@ -163,7 +163,10 @@ function calStat(waterLogs, keyFunc, targetUnit) {
 
 
 async function FormatWaterLogs(userId, waterLogs) {
-    const waterGoal = await FindFromMongo("water_goal", {userId: userId});
+    let waterGoal = await FindFromMongo("water_goal", {userId: userId});
+    if (!waterGoal || waterGoal.length == 0) {
+        waterGoal = [{value: 0, unit: 'ml'}];
+    }
     const goalUnit = waterGoal[0].unit;
     return waterLogs.map((log) => {
         if (log.unit === goalUnit) {

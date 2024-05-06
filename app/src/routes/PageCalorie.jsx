@@ -85,6 +85,10 @@ function PageCalorie() {
     }
 
     async function updateGoal() {
+        if (!goal || goal === 0) {
+            alert("calorie goal can not be empty or zero!");
+            return
+        }
         await setCalorieGoal(goal);
         const newAchieved = calAchieved(calorieLogs, goal);
         setEditGoal(false);
@@ -151,7 +155,11 @@ function PageCalorie() {
                 <h1 className='third-title'>Your Workouts 
                     <span className='title-link'><Link className='title-link' to="/exercise/workout"> Manage</Link></span>
                 </h1>
+                {workouts.length === 0 ? 
+                <div style={{marginBottom:'2rem'}}>You have no workouts yet. Click <Link to="/exercise/workout">here</Link> to add some. </div> :
                 <WorkoutList workouts={workouts} addCalorieLog={addCalorieLog}/>
+                }
+            
                 <h1 className='third-title'>Your Exercise Logs for Today</h1>
                 <Link to="/exercise/calendar" style={{color: 'var(--my-blue)'}}> History</Link>
                 <CaloriesLogList calorieLogs={calorieLogs} deleteLog={removeCalorieLog}/>
