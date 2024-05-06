@@ -90,7 +90,7 @@ async function AddCalorieLog(userId, exerciseId) {
 async function GetCalorieLogs(userId, dateStr) {
     const startTime = new Date(dateStr);
     let endTime = new Date(dateStr);
-    endTime.setHours(endTime.getHours() + 24);
+    endTime.setDate(endTime.getDate()+1);
     const logs = await FindFromMongo(collectionCalorieLog, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
     return logs;
 }
