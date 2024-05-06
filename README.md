@@ -27,11 +27,11 @@ CSCI 5117, Spring 2024, [assignment description](https://canvas.umn.edu/courses/
 
 Which (if any) device integration(s) does your app support?
 
-- Camera
+- Camera Integration
 
 Which (if any) progressive web app feature(s) does your app support?
 
-- ...
+- Camera Integration
 
 ## Mockup images
 
@@ -47,10 +47,29 @@ Which (if any) progressive web app feature(s) does your app support?
 
 ## Screenshots of Site (complete)
 
-**[Add a screenshot of each key page](https://stackoverflow.com/questions/10189356/how-to-add-screenshot-to-readmes-in-github-repository)
-along with a very brief caption:**
+homepage
 
-![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+![image](./screenshots/homepage.png)
+
+![image](./screenshots/homepage_loggedin.png)
+
+water log
+
+![image](./screenshots/water_goal.png)
+
+![image](./screenshots/water_main.png)
+
+![image](./screenshots/water_calendar.png)
+
+weight log
+
+![image](./screenshots/weight_tracker.png)
+
+exercise log
+
+![image](./screenshots/exercise_log.png)
+
+![image](./screenshots/workouts.png)
 
 ## External Dependencies
 
