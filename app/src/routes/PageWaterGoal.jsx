@@ -3,6 +3,8 @@ import PageContainer from "../components/PageContainer";
 import { keepTwoDecimal } from "../common/utils";
 import { InputWithTwoUnits } from '../components/InputWithTwoUnits';
 import { SendGet, SendPost } from "../common/http";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 
 
 export const WaterGoalRoute = {
@@ -65,27 +67,30 @@ function PageWaterGoal() {
 
     return (
         <div className="container">
-            <h1 className="primary-title">See how much water you need</h1>
+            <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Calculate your water needs</h1>
+            <br/>
             <InputWithTwoUnits 
                 title="Height" 
                 units={["cm", "in"]} 
                 coefs={[1.0/cmToInCoefficient, cmToInCoefficient]}
                 data={height}
                 handleInputChange={setHeight}/>
+            <br/>
             <InputWithTwoUnits 
                 title="Weight" 
                 units={["kg", "lbs"]} 
                 coefs={[1.0/kgToLbsCoefficient, kgToLbsCoefficient]}
                 data={weight}
                 handleInputChange={setWeight}/>
-            <button className="button is-primary" onClick={calculateGoal}>Calculate</button>
+            <br/>
+            <Button className="button is-primary" onClick={calculateGoal}>Calculate</Button>
 
             {
             goal.value !== undefined &&
             <div className="goal-container">
-                <h1 className="secondary-title">suggested daily water intake</h1>
+                <h1 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">suggested daily water intake</h1>
                 <WaterIntakeGoal data={goal} handleGoalChange={setGoal}/>
-                <button className="button is-primary" onClick={setWaterGoal}>Set as Goal</button>
+                <Button className="button is-primary" onClick={setWaterGoal}>Set as Goal</Button>
             </div>
             }
         </div>

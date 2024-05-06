@@ -1,14 +1,23 @@
 .container {
-    max-width: 600px;
+    max-width: 450px;
     margin: 20px auto;
     padding: 20px;
     background-color: white;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
+    justify-items: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    align-items: center;
+    padding-bottom: 40px;   
 }
 
 .formInput, .textarea, .formNumber {
-    width: 100%;
+    width: 75%;
     padding: 8px;
     margin: 10px 0;
     border: 1px solid #ccc;
@@ -17,13 +26,14 @@
 
 .formInput:focus, .form-textarea:focus, .formNumber:focus {
     outline: none;
-    border-color: #6658f6;
+    border-color: #000;
 }
 
 .formButton {
-    padding: 10px 20px;
+    /* padding: 10px 20px; */
+    max-width: 50%;
     color: white;
-    background-color: #4CAF50;
+    background-color: #000;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -31,7 +41,7 @@
 }
 
 .formButton:hover {
-    background-color: #45a049;
+    background-color: #303030;
 }
 
 .workoutList {

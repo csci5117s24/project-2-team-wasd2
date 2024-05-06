@@ -4,6 +4,7 @@ import 'chart.js/auto';
 import PageContainer from "../components/PageContainer";
 import { SendGet } from '../common/http';
 import { Link } from 'react-router-dom';
+import { Button } from '../components/ui/button';
 
 
 export const WorkoutCalendarRoute = {
@@ -122,9 +123,11 @@ export default function WorkoutChart () {
     return (
         <div className='section'>
             <div className="sub-nav">
+                <Button asChild variant="link">
                 <Link to="/exercise" style={{color: 'var(--my-blue)'}}> Back to Daily Exercise Log</Link>
+                </Button>
             </div>
-            <h1 className='primary-title'>Weekly Calorie Tracker</h1>
+            <h1 className='scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl'>Weekly Calorie Tracker</h1>
             {/* {days.map((day, index) => (
                 <div key={index}>
                     <div>{day.day}</div>
@@ -144,9 +147,9 @@ export default function WorkoutChart () {
             ))} */}
             <Line data={data} options={options} />
             <div className="h-container">
-                    <button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickPre}> pre </button>
+                    <Button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickPre}> prev </Button>
                     {endDay < today &&
-                    <button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickNext}> next </button>}
+                    <Button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickNext}> next </Button>}
             </div>
         </div>
     );

@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import PageContainer from "../components/PageContainer";
-import Calendar from 'react-calendar'
+// import Calendar from 'react-calendar'
 import { BarChart } from "../components/Charts";
 import { Link } from "react-router-dom";
 import { SendGet } from "../common/http";
 import ReactLoading from 'react-loading';
+import { Button }   from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
+import { Calendar } from "../components/ui/calendar";
 
 export const WaterCalendarRoute = {
     path: "/water",
@@ -44,9 +47,11 @@ export function PageWaterCalendar() {
             <HistoryChart/>
             <div className="calendar-container">
                 <Calendar 
-                    calendarType="gregory"
-                    onClickDay={(value, e) => handleClickDay(value, e)} 
-                    value={selectedDate}/>
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(value, e) => handleClickDay(value, e)}
+                    className="rounded-md border"
+                    />
             </div>
             {loading ? <div className="center-items"><ReactLoading type="bars" color="#3EA4F0" /></div> : 
             <LogList waterLogs={waterLogs}></LogList>}
@@ -58,7 +63,9 @@ function NavigationBar() {
     return (
         <div className="sub-nav">
             <img className="icon" src="/water_drop.svg" alt="to water log"/>
+            <Button asChild variant="link">
             <Link to="/water"> Back to Water Log</Link>
+            </Button>
         </div>
     )
 }
@@ -142,9 +149,13 @@ function HistoryChart() {
     }
 
     return (
-        <div className="card chart-container">
-            <div className="container has-text-centered">
-                <div className="date-range-buttons">
+        <div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Water Log History</CardTitle>
+                    <CardDescription>Check your water intake history</CardDescription>
+                    <br/>
+                    <div className="date-range-buttons">
                     <ChartButton description="Days" 
                         clicked={dateRange === "days"} 
                         handleClick={showLast7Day}/>
@@ -155,13 +166,15 @@ function HistoryChart() {
                         clicked={dateRange === "months"} 
                         handleClick={showLast12Month}/>
                 </div>
+                <br/>
                 <BarChart dataset={chartData} title={charTitle}/>
                 <div className="h-container">
-                    <button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickPre}> pre </button>
+                    <Button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickPre}> prev</Button>
                     {endDate < today &&
-                    <button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickNext}> next </button>}
+                    <Button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickNext}> next </Button>}
                 </div>
-            </div>
+                </CardHeader>
+            </Card>
         </div>
     )
 }
@@ -171,7 +184,7 @@ function ChartButton({description, clicked, handleClick}) {
     const className = clicked ? "button is-info" : "button";
 
     return (
-        <button className={className} onClick={handleClick}>{description}</button>
+        <Button className={className} onClick={handleClick}>{description}</Button>
     )
 }
 

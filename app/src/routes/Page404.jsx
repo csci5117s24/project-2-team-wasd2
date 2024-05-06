@@ -7,7 +7,7 @@ export default function Page404() {
                 <Header></Header>
             </div>
             <div className="main-page-body">
-                <h1 className="primary-title">404 Not Found</h1>
+                <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">404 Not Found</h1>
             </div>
         </div>
     )

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styles from '../css/WorkoutForm.module.css';
 import { SendGet, SendDelete, SendUpdate } from '../common/http'; 
+import { Button } from "../components/ui/button";
+import { Input } from '../components/ui/input';
 
 function WorkoutList({  fetchTrigger }) {
     const [workouts, setWorkouts] = useState([]);
@@ -71,33 +73,33 @@ function WorkoutList({  fetchTrigger }) {
 
     return (
         <div className={styles.workoutList}>
-            <h2>Workouts List</h2>
+            <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">View Previous Workouts Here</h2>
             {workouts.length > 0 ? workouts.map((workout) => (
                 <div key={workout._id} className={styles.workoutItem}>
                     {editingId === workout._id ? (
                         <form onSubmit={handleEditFormSubmit} className={styles.editSaveActions}>
-                            <input type="text" name="title" value={editFormData.title} onChange={handleEditFormChange} />
-                            <input type="text" name="description" value={editFormData.description} onChange={handleEditFormChange} />
-                            <input type="number" name="calories" value={editFormData.calories} onChange={handleEditFormChange} />
-                            <button type="submit" className={`${styles.button} ${styles.green}`}>Save</button>
-                            <button type="button" onClick={() => setEditingId(null)} className={styles.button}>Cancel</button>
+                            <Input type="text" name="title" value={editFormData.title} onChange={handleEditFormChange} />
+                            <Input type="text" name="description" value={editFormData.description} onChange={handleEditFormChange} />
+                            <Input type="number" name="calories" value={editFormData.calories} onChange={handleEditFormChange} />
+                            <Button type="submit" className={`${styles.button} ${styles.green}`}>Save</Button>
+                            <Button type="button" onClick={() => setEditingId(null)} className={styles.button}>Cancel</Button>
                         </form>
                     ) : (
                         <div>
-                            <h3>{workout.title}</h3>
-                            <p>{workout.description}</p>
-                            <p>Calories: {workout.calories}</p>
+                            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">{workout.title}</h3>
+                            <p className="leading-7 [&:not(:first-child)]:mt-6">{workout.description}</p>
+                            <p className="leading-7 [&:not(:first-child)]:mt-6">Calories: {workout.calories}</p>
                             <div className={styles.workoutActions}>
-                                <button onClick={() => {
+                                <Button onClick={() => {
                                     setEditingId(workout._id);
                                     setEditFormData({ title: workout.title, description: workout.description, calories: workout.calories });
-                                }} className={styles.button}>Edit</button>
-                                <button onClick={() => handleDeleteWorkout(workout._id)} className={`${styles.button} ${styles.red}`}>Delete</button>
+                                }} className={styles.button}>Edit</Button>
+                                <Button onClick={() => handleDeleteWorkout(workout._id)} className={`${styles.button} ${styles.red}`}>Delete</Button>
                             </div>
                         </div>
                     )}
                 </div>
-            )) : <p>No workouts available.</p>}
+            )) : <p className="leading-7 [&:not(:first-child)]:mt-6">No workouts available.</p>}
         </div>
     );
 }

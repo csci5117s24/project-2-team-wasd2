@@ -5,22 +5,30 @@
   "dependencies": {
     "@cloudinary/react": "^1.13.0",
     "@cloudinary/url-gen": "^1.19.0",
+    "@radix-ui/react-slot": "^1.0.2",
     "@ramonak/react-progress-bar": "^5.2.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "chart.js": "^4.4.2",
     "chartjs-plugin-annotation": "^3.0.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
     "d3-color": "^3.1.0",
     "d3-interpolate": "^3.0.1",
+    "date-fns": "^3.6.0",
+    "lucide-react": "^0.378.0",
     "react": "^18.2.0",
     "react-calendar": "^4.8.0",
     "react-chartjs-2": "^5.2.0",
+    "react-day-picker": "^8.10.1",
     "react-dom": "^18.2.0",
     "react-liquid-gauge": "^1.2.4",
     "react-loading": "^2.0.3",
     "react-router-dom": "^6.22.3",
     "react-scripts": "^5.0.1",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss-animate": "^1.0.7",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -50,6 +58,7 @@
   },
   "proxy": "http://localhost:7071",
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "tailwindcss": "^3.4.3"
   }
 }

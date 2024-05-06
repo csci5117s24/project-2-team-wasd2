@@ -3,6 +3,8 @@ import { SendGet, SendDelete, SendPost } from '../common/http';
 import PageContainer from '../components/PageContainer';
 import { Link } from 'react-router-dom';
 import ProgressBar from "@ramonak/react-progress-bar";
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export const CalorieRoute = {
     path: "/exercise",
@@ -140,20 +142,32 @@ function PageCalorie() {
                 <div className='section'>
                 {editGoal ? 
                     <div className='calorie-goal'>
-                        <input type='text' value={goal} onChange={(e) => {handleGoalChange(e)}}></input>
-                        <button onClick={updateGoal}>submit</button>
+                        <Input type='text' value={goal} onChange={(e) => {handleGoalChange(e)}}></Input>
+                        <Button onClick={updateGoal} style={{
+                            textDecoration: 'none',
+                        }}>submit</Button>
                     </div> :
                     <div className='calorie-goal'>
-                        <span>Daily Calorie Goal: <span style={{fontWeight: 'bold'}}>{goal}</span></span> <button onClick={()=>{setEditGoal(true)}}>edit</button>
+                        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Daily Calorie Goal: <span style={{fontWeight: 'bold'}}>{goal}</span></h1> 
+                        <br></br>
+                        <Button style={{
+                            textDecoration: 'none',
+                        }} onClick={()=>{setEditGoal(true)}}>edit</Button>
                     </div>}
                 <div style={{padding: '0 10%'}}><ProgressBar completed={achieved} bgColor="#836FFF"/></div>
                 </div>
-                <h1 className='third-title'>You Workouts 
-                    <span className='title-link'><Link className='title-link' to="/exercise/workout"> Manage</Link></span>
+                <h1 className='scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl'>Your Workouts 
                 </h1>
+                <span className='title-link'>
+                    <Button asChild variant="link">
+                    <Link className='title-link' to="/exercise/workout"> Manage</Link>
+                    </Button>
+                </span>
                 <WorkoutList workouts={workouts} addCalorieLog={addCalorieLog}/>
-                <h1 className='third-title'>You Exercise Log for Today</h1>
+                <h1 className='scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl'>Your Exercise Log for Today</h1>
+                <Button asChild variant="link">
                 <Link to="/exercise/calendar" style={{color: 'var(--my-blue)'}}> History</Link>
+                </Button>
                 <CaloriesLogList calorieLogs={calorieLogs} deleteLog={removeCalorieLog}/>
             </div>
         </div>
@@ -165,9 +179,11 @@ function CaloriesLogList({calorieLogs, deleteLog}) {
     const items = calorieLogs.map((cl) => {
         return (
             <div className='cell card item-container' key={cl._id}>
-                <p >{cl.exerciseName}</p>
-                <p style={{fontSize:'1.5rem', fontWeight:"bold", color: 'var(--my-blue)'}}> {cl.calories} calories</p>
-                <button className='button' onClick={() => {deleteLog(cl._id)}}>Delete</button>
+                <p className="leading-7 [&:not(:first-child)]:mt-6" >{cl.exerciseName}</p>
+                <p className="leading-7 [&:not(:first-child)]:mt-6" style={{fontSize:'1.5rem', fontWeight:"bold", color: 'var(--my-blue)'}}> {cl.calories} calories</p>
+                <Button style={{
+                    textDecoration: 'none',
+                }} className='button' onClick={() => {deleteLog(cl._id)}}>Delete</Button>
             </div>
         )
     })
@@ -198,9 +214,9 @@ function WorkoutItem({workout, addToCalorie}) {
             <div><img src='/workout.jpeg' alt='workout'></img></div>
             <div>
                 <h1 style={{fontSize: '1.5rem', fontWeight:'bold'}}>{workout.title}</h1>
-                <p>{workout.description}</p>
-                <p>{workout.calories}</p>
-                <button className='button' onClick={() => { addToCalorie(workout._id) }}>Add to Calorie</button>
+                <p className="leading-7 [&:not(:first-child)]:mt-6">{workout.description}</p>
+                <p className="leading-7 [&:not(:first-child)]:mt-6">{workout.calories}</p>
+                <Button className='button' onClick={() => { addToCalorie(workout._id) }}>Add to Calorie</Button>
             </div>
         </div>
     )

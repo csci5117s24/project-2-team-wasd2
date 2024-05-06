@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import PageContainer from "../components/PageContainer";
 import { InputWithTwoUnits } from '../components/InputWithTwoUnits';
 import { SendGet, SendPost } from "../common/http";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+
 
 
 export const WeightGoalRoute = {
@@ -47,24 +51,28 @@ export function PageWeightGoal() {
 
     return (
         <div className="container">
-            <h1 className="primary-title">Set up Weight Goal</h1>
+            <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Set up Weight Goal</h1>
+            <br/>
             <InputWithTwoUnits 
                 title="Current Weight" 
                 units={["kg", "lbs"]} 
                 coefs={[1.0/kgToLbsCoefficient, kgToLbsCoefficient]}
                 data={current}
                 handleInputChange={setCurrent}/>
+            <br/>
             <InputWithTwoUnits 
                 title="Weight Goal" 
                 units={["kg", "lbs"]} 
                 coefs={[1.0/kgToLbsCoefficient, kgToLbsCoefficient]}
                 data={goal}
                 handleInputChange={setGoal}/>
+            <br/>
 			<CalendarInput 
                 title="Goal Deadline" 
                 data={deadline}
                 handleInputChange={setDeadline}/>
-            <button className="button is-primary" onClick={setWeightData}>Set as Goal</button>
+            <br/>
+            <Button className="button is-primary" onClick={setWeightData}>Set as Goal</Button>
 
         </div>
     )
@@ -75,17 +83,13 @@ export function PageWeightGoal() {
 
 export function CalendarInput({ title, data, handleInputChange }) {
     return(
-        <div className="card level input-card">
-            <div className="level-left">
-                <div className="level-item">
-                    <p>{title}</p>
-                </div>
-            </div>
-            <div className="level-right">
-                <div className="level-item">
-                    <input type="date" value={data.value} onChange={e=>handleInputChange(e)}></input>
-                </div>
-            </div>
+        <div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>{title}</CardTitle>
+                    <Input type="date" value={data} onChange={e=>handleInputChange(e)}></Input>
+                </CardHeader>
+            </Card>
         </div>
     )
 }

@@ -5,6 +5,18 @@ import PageContainer from "../components/PageContainer";
 import WorkoutList from './WorkoutList';
 import { SendGet, SendPost } from '../common/http';
 import { Link } from 'react-router-dom';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+  } from "../components/ui/card";
+  import { Input } from "../components/ui/input";
+  import { Textarea } from "../components/ui/textarea";
+import { Button } from "../components/ui/button";
+  
 
 export const WorkOutFormRoute = {
     path: "/exercise",
@@ -69,15 +81,24 @@ export function WorkoutForm() {
     return (
         <div className='section'>
             <div className="sub-nav">
+                <Button asChild variant="link">
                 <Link to="/exercise" style={{color: 'var(--my-blue)'}}> Back to Daily Exercise Log</Link>
+                </Button>
             </div>
-            <h1 className='primary-title'>Log Your Workouts here</h1>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Log your workouts here</CardTitle>
+                    <CardDescription>Track your workouts and calories burned</CardDescription>
+                </CardHeader>
             <form onSubmit={handleSubmit}>
-                <input type="text" className={styles.formInput} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Workout Title" />
-                <textarea className={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
-                <input type="number" className={styles.formNumber} value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories Burned" />
-                <button type="submit" className={styles.formButton}>Add Workout</button>
+                <Input type="text" className={styles.formInput} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Workout Title" />
+                <Textarea className={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
+                <Input type="number" className={styles.formNumber} value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calories Burned" />
+                <Button type="submit" className={styles.formButton}>Add Workout</Button>
             </form>
+            </Card>
+            <br />
+            <br />
             <WorkoutList  fetchTrigger={fetchTrigger} />
         </div>  
     );

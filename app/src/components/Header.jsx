@@ -3,6 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { useLocation } from 'react-router-dom'; 
 import UserContext from '../components/UserContext';
+import { Button } from "./ui/button";
 
 function Header() {
     const [isNarrow, setIsNarrow] = useState(false);
@@ -94,7 +95,9 @@ function NavItem({desc, to, isSelected}) {
     const className = isSelected ? "selected-menu" : "menu";
     return (
         <div className={className}>
+            <Button variant="link" asChild>
             <Link to={to}>{desc}</Link>
+            </Button>
         </div>
     )
 }
@@ -151,8 +154,8 @@ function UserInfo() {
             {avtarUrl && <img className="avatar" src={avtarUrl} alt="avatar"/>}
             {username && <p className="username">{username}</p>}
             {username ? 
-                <button className="button is-primay" onClick={logout}>Log Out</button> : 
-                <button className="button is-primay" onClick={login}>Log In</button>}
+                <Button className="button is-primary" onClick={logout}>Log Out</Button> : 
+                <Button className="button is-primary" onClick={login}>Log In</Button>}
         </div>
     )
 }

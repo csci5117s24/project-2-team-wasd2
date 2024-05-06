@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { keepTwoDecimal } from "../common/utils";
+import { CardTitle, Card, CardContent, CardDescription, CardFooter, CardHeader } from "./ui/card";
+import { Input } from "./ui/input";
+import { color } from "@cloudinary/url-gen/qualifiers/background";
 
 export function InputWithTwoUnits({ title, units, coefs, data, handleInputChange }) {
 
@@ -35,20 +38,20 @@ export function InputWithTwoUnits({ title, units, coefs, data, handleInputChange
         handleInputChange({value: newValue, unit: unit});
     }
 
-    return(
-        <div className="card level input-card">
-            <div className="level-left">
-                    <p>{title}</p>
-            </div>
-            <div className="level-right">
-                <div className="level-item">
-                    <input className="input" type="text" value={data.value} onChange={e=>handleValueChange(e)}></input>
-                </div>
-                <div className="level-item">
-                    <span className={unit===units[0] ? "selected-span" : "clickable-span"} onClick={toFirstUnit}>{units[0]}</span> 
-                    | <span className={unit===units[1] ? "selected-span" : "clickable-span"} onClick={toSecondUnit}>{units[1]}</span>
-                </div>
-            </div>
+    return (
+        <div>
+            <Card>
+                <CardContent>
+                     <CardTitle>{title}</CardTitle>
+                     <br/>
+                        <Input style={{
+                            color: "black",
+                        }} className="input" type="text" value={data.value} onChange={e=>handleValueChange(e)}></Input>
+                        <br/>
+                        <span className={unit===units[0] ? "selected-span" : "clickable-span"} onClick={toFirstUnit}>{units[0]}</span> 
+                        | <span className={unit===units[1] ? "selected-span" : "clickable-span"} onClick={toSecondUnit}>{units[1]}</span>
+                </CardContent>
+            </Card>
         </div>
     )
 }

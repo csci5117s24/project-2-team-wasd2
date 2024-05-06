@@ -5,6 +5,7 @@ import "../css/PageMain.css";
 import { LineChart } from "../components/Charts";
 import { SendGet } from "../common/http";
 import ReactLoading from 'react-loading';
+import { Button } from "../components/ui/button";
 
 export const MainpageRoute = {
     path: "/",
@@ -46,12 +47,12 @@ function NotLoggedInMainPage() {
     return (
         <div className="columns">
             <div className="column is-three-fifths">
-                <h1>Health Tracker</h1>
-                <p>This app will help you keep track of your water drinking, weight change, and exercises
-                    to make sure you are reaching your daily and weekly goals.
-                    <br/>Log in to get started.</p>
+                <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Health Tracker</h1>
+                <p className="leading-7 [&:not(:first-child)]:mt-6">Want to track your health? Experience the all-in-one water, weight, exercise and calorie tracker right here.
+                </p>
+                <p className="leading-7 [&:not(:first-child)]:mt-6">Log in to get started</p>
                 <div className="login-button-container">
-                    <button onClick={login}>Log In</button>
+                    <Button onClick={login}>Log In</Button>
                 </div>
             </div>
             <div className="column auto">

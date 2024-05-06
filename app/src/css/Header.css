@@ -24,7 +24,7 @@
 }
 
 .selected-menu {
-    border-bottom: 2px solid var(--my-orange);;
+    border-bottom: 2px solid var(--my-blue);;
 }
 
 .menu a {
@@ -32,11 +32,11 @@
 }
 
 .selected-menu a {
-    color: var(--my-orange);
+    color: var(--my-blue);
 }
 
 .selected-menu a:hover {
-    color: #FF6500;
+    color: var(--my-blue);
 }
 
 .logo {

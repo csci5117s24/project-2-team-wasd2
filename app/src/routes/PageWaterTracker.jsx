@@ -131,7 +131,7 @@ export function PageWaterTracker() {
                 <p className="motto">Hydrate to Elevate: Fuel Your Life with H<sub>2</sub>O!</p>
                 <img src="/quote-right.svg" alt="quote"></img>
             </div>
-            <h1 className="third-title">Record Your Water Intake for Today</h1>
+            <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Record Your Water Intake for Today</h1>
             {loading ? <div className="center-items"><ReactLoading type="bars" color="#836FFF" /></div> : 
             <div className="card section ">
                 <NavigationBar goal={goal}/>

@@ -46,7 +46,9 @@
 
 
 .main-page-body button {
-    background-color: var(--my-yellow);
+    border: none;
+    padding: 0.5rem 1.5rem;
+    font-size: 1.5rem;
 }
 
 .login-button-container {
@@ -57,9 +59,8 @@
 
 .login-button-container button {
     border: none;
-    padding: 0.5rem 1.5rem;
-    box-shadow: 5px 5px 10px 2px rgba(0,0,0,.3);
-    font-size: 1.5rem;
+    padding: 2rem 1.5rem;
+    font-size: 1.0rem;
 }
 
 @media all and (max-width:800px) {

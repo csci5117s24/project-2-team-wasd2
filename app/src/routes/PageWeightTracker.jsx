@@ -13,6 +13,17 @@ import 'chart.js/auto';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { Chart, registerables } from 'chart.js';
 import { Link } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+  } from "../components/ui/card";
+  
+
 Chart.register(...registerables, annotationPlugin);
 
 const oneDayInMilliSec = 1000 * 24 * 60 * 60;
@@ -130,22 +141,29 @@ export function PageWeightTracker() {
                 <img src="/quote-right.svg" alt="quote"></img>
             </div>
 			<div className="weight-header">
-				<span>Goal: {goal.value ? "" + goal.value + " " + goal.unit : "0 kg" } </span>
-				<span style={{marginLeft:'2rem'}}> {daysLeft}  Days Left </span>
+				<span className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">Goal: {goal.value ? "" + goal.value + " " + goal.unit : "0 kg" } </span>
+				<span className="scroll-m-20 text-2xl font-semibold tracking-tight" style={{marginLeft:'2rem'}}> {daysLeft}  Days Left </span>
 				<br/>
+				<br/>
+				<Button asChild variant="link">
 				<Link to="/weight/goal"> Edit Goal</Link>
+				</Button>
 			</div>
-			<button className="button is-primary" style={{marginBottom: '1rem'}} onClick={()=> setShowAddLog(true)}>Record Weight for Today</button>
+			<Button className="button is-primary" style={{marginBottom: '1rem'}} onClick={()=> setShowAddLog(true)}>Record Weight for Today</Button>
             {showAddLog && <WeightLogModal
                 showModal={showAddLog}
                 setShowModal={setShowAddLog}
                 weightLog={loggedToday ? weightLogs[weightLogs.length - 1] : undefined} 
                 unit={goal.unit} 
                 addOrUpdateLog={loggedToday ? editLog : addWeightLog}/>}
-			<div className="card section">
-			<LineChart logs={weightLogs} goal={goal}/>
-            <WeightLogList weightLogs={weightLogs} editLog={editLog} deleteLog={deleteLog}/>
-			</div>
+			<Card>
+				<CardHeader>
+					<CardTitle>Weight Log</CardTitle>
+					<CardDescription>Check your weight log history</CardDescription>
+					<LineChart logs={weightLogs} goal={goal}/>
+					<WeightLogList weightLogs={weightLogs} editLog={editLog} deleteLog={deleteLog}/>
+				</CardHeader>
+			</Card>
         </div>
     )
 }
@@ -175,8 +193,8 @@ function LogItem({log, editLog, deleteLog}) {
             <p>{log.value + log.unit}</p>
             { showBubble &&
                 <div className="one">
-                    <button className="button is-info" style={{marginRight: '0.5rem'}} onClick={()=>setShowEditLog(true)}>Edit</button>
-                    <button className="button is-danger" style={{marginLeft: '0.5rem'}} onClick={()=>deleteLog(log._id)}>Delete</button>
+                    <Button className="button is-info" style={{marginRight: '0.5rem'}} onClick={()=>setShowEditLog(true)}>Edit</Button>
+                    <Button className="button is-danger" style={{marginLeft: '0.5rem'}} onClick={()=>deleteLog(log._id)}>Delete</Button>
                 </div> 
             }
             {showEditLog && <WeightLogModal 
@@ -261,35 +279,38 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
     return (
         <div className={className}>
             <div className="modal-background"></div>
-            <div className="modal-card">
-                <header className="modal-card-head">
-                    <p className="modal-card-title">{weightLog ? "Edit Weight Log" : "New Weight Log"}</p>
-                    <button className="delete" aria-label="close" onClick={() => setShowModal(false)}></button>
-                </header>
-                <section className="weight-modal modal-card-body">
-					<InputWithTwoUnits 
-						title="Current Weight:"
-						units={["kg", "lbs"]} 
-						coefs={[1.0/kgToLbsCoefficient, kgToLbsCoefficient]}
-						data={data}
-						handleInputChange={handleInputChange}/>
+			<Card className="modal-card">
+					
+					<CardContent>
+					<CardTitle>{weightLog ? "Edit Weight Log" : "New Weight Log"}</CardTitle>
 					<br/>
-					<p>Upload a picture:</p>
-					<CloudinaryUploadWidget uwConfig={uwConfig} setPublicId={setPublicId} />
-					<div style={{ maxWidth: "40%", display: "flex", marginLeft: "30%", marginTop: "15px"}}>
+					<Button style={{
+						backgroundColor: "var(--my-red)",
+					}} onClick={() => setShowModal(false)}>Close</Button>
+						<br/>
+						<br/>
+						<InputWithTwoUnits
+							title="Current Weight:"
+							units={["kg", "lbs"]}
+							coefs={[1.0/kgToLbsCoefficient, kgToLbsCoefficient]}
+							data={data}
+							handleInputChange={handleInputChange}/>
+						<br/>
+						<p className="leading-7 [&:not(:first-child)]:mt-6">Upload a picture:</p>
+						<CloudinaryUploadWidget uwConfig={uwConfig} setPublicId={setPublicId} />
+					<div style={{ maxWidth: "40%", display: "flex", marginLeft: "25%", marginTop: "10px"}}>
 						<AdvancedImage
 						style={{ maxWidth: "100%" }}
 						cldImg={myImage}
 						plugins={[responsive(), placeholder()]}
 						/>
 					</div>
-                </section>
-                <footer className="modal-card-foot">
-                <div className="buttons">
-                    <button className="button is-success" onClick={() => handleSubmit(data, publicId)}>Submit</button>
-                </div>
-                </footer>
-            </div>
+					<Button style={{
+						padding: "1rem",	
+						maxWidth: "100%",
+					}} onClick={() => handleSubmit(data, publicId)}>Submit</Button>
+					</CardContent>
+			</Card>
         </div>
     )
 }
