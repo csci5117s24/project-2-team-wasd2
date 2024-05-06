@@ -64,54 +64,48 @@ function NotLoggedInMainPage() {
 }
 
 function DailyCharts() {
-    const [waterData, setWaterData] = useState({});
-    const [weightData, setWeightData] = useState({});
-    const [exerciseData, setExerciseData] = useState({});
-    const [loading, setLoading] = useState(true);
+    const placeHolderData = [ {label: "", value: 0},
+    {label: "", value: 0},
+    {label: "", value: 0},
+    {label: "", value: 0},
+    {label: "", value: 0},
+    {label: "", value: 0},
+    {label: "", value: 0}]
 
-    const mockdata = [ {label: "Apr 1", value: 2000},
-    {label: "Apr 2", value: 3000},
-    {label: "Apr 3", value: 3000},
-    {label: "Apr 4", value: 2500},
-    {label: "Apr 5", value: 0},
-    {label: "Apr 6", value: 300},
-    {label: "Apr 7", value: 3000},]
+    const [waterData, setWaterData] = useState(placeHolderData);
+    const [weightData, setWeightData] = useState(placeHolderData);
+    const [exerciseData, setExerciseData] = useState(placeHolderData);
 
     useEffect(()=>{
         async function fetchData() {
-            setLoading(true);
+
             const today = new Date().toLocaleDateString();
-            const water = await SendGet("/api/water/stats", {rangeType: "days", dateStr: today});
-            setWaterData(water.dataset);
-            setWaterData(water.dataset);
-            setWeightData(mockdata);
-            const exercise = await SendGet("/api/calorie/stats", {endDate: today});
-            const chartData = exercise.stats.map((stat) => {return {label: stat.date, value: stat.calories}})
-            setExerciseData(chartData);
-            setLoading(false);
+            Promise.all([
+                SendGet("/api/water/stats", {rangeType: "days", dateStr: today}),
+                SendGet("/api/weight/stats", {endDate: today}),
+                SendGet("/api/calorie/stats", {endDate: today}),
+            ]).then(([water, weight, exercise]) => {
+                const weightData = weight.stats.map((stat) => {return {label: stat.date, value: stat.value}});
+                const exerciseData = exercise.stats.map((stat) => {return {label: stat.date, value: stat.calories}})
+                setWaterData(water.dataset);
+                setWeightData(weightData);
+                setExerciseData(exerciseData);
+            }).catch(error=>{console.log(error)});
         }
         fetchData();
     }, [])
 
-    if (loading) {
-        return (
-            <div className="main-page-body">
-                <ReactLoading type="bars" color="#14F3CB" />
+    return (
+        <div className="columns">
+            <div className="column is-one-third">
+                <LineChart dataset={waterData} title={"water drinking"}></LineChart>
             </div>
-        )
-    } else {
-        return (
-            <div className="columns">
-                <div className="column is-one-third">
-                    <LineChart dataset={waterData} title={"water drinking"}></LineChart>
-                </div>
-                <div className="column is-one-third">
-                    <LineChart dataset={weightData} title={"weight change"}></LineChart>
-                </div>
-                <div className="column is-one-third">
-                    <LineChart dataset={exerciseData} title={"calorie consumed"}></LineChart>
-                </div>
+            <div className="column is-one-third">
+                <LineChart dataset={weightData} title={"weight change"}></LineChart>
             </div>
-        )
-    }
+            <div className="column is-one-third">
+                <LineChart dataset={exerciseData} title={"calorie consumed"}></LineChart>
+            </div>
+        </div>
+    )
 }

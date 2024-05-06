@@ -16,6 +16,12 @@
     margin-bottom: 2rem;
 }
 
+@media all and (max-width:800px) {
+    .primary-title {
+        font-size: 1.5rem;
+    }
+}
+
 .secondary-title {
     font-size: 2rem;
     font-style: italic;

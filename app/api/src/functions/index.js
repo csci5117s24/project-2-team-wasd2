@@ -2,6 +2,7 @@ const { app } = require('@azure/functions');
 const { MongoClient, ObjectID} = require('mongodb');
 const { FindByIDFromMongo, UpdateMongo, DeleteFromMongo, FindFromMongo } = require('../common/mongo');
 const { FormatWaterLogs, GetWaterLogStatistics} = require('../biz/water');
+const { GetWeeklyWeightStats } = require('../biz/weight');
 const { 
     AddExerciseLog, UpdateExerciseLog, DeleteExerciseLog, 
     SetDailyCalorieGoal, GetDailyCalorieGoal, AddCalorieLog, DeleteCalorieLog,GetCalorieLogs, GetWeeklyCalorieStats,
@@ -867,3 +868,25 @@ app.http('getWaterLogStats', {
         }
     }
 })
+
+
+app.http('getWeeklyWeightStats', {
+    methods: ["GET"], 
+    authLevel: "anonymous",
+    route: "weight/stats",
+    handler: async (request, context) => {
+        const token = await authenticate(request);
+        if (!token) {
+            return { status: 401 }
+        }
+        let endDateStr = request.query.get("endDate");
+        if (!endDateStr) {
+            endDateStr = new Date().toLocaleDateString();
+        }
+        const stats = await GetWeeklyWeightStats(token.userId, endDateStr);
+        return {
+            status: 200, 
+            jsonBody: {stats: stats}
+        }
+    }
+});

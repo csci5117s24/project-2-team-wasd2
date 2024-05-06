@@ -4,35 +4,34 @@ CSCI 5117, Spring 2024, [assignment description](https://canvas.umn.edu/courses/
 
 ## App Info:
 
-* Team Name: WASD
-* App Name: ???????
-* App Link: <https://TODO.com/>
+- Team Name: WASD
+- App Name: Health Tracker
+- App Link: <https://black-bay-07d1c5410.5.azurestaticapps.net/>
 
 ### Students
 
-* Maurice Yu, yu000464@umn.edu
-* Dominic Deiman, deima013@umn.edu
-* Ling Wang, wan01872@umn.edu
-* Salma Abdi, abdi0300@umn.edu
-* Stuti Shah, shah0794@umn.edu
-
+- Maurice Yu, yu000464@umn.edu
+- Dominic Deiman, deima013@umn.edu
+- Ling Wang, wan01872@umn.edu
+- Salma Abdi, abdi0300@umn.edu
+- Stuti Shah, shah0794@umn.edu
 
 ## Key Features
 
 **Describe the most challenging features you implemented
 (one sentence per bullet, maximum 4 bullets):**
 
-* ...
+- Using Cloudinary to store user pictures.
+- Enabling unit switch for water log.
+- Calculating and formatting statistic data.
 
 Which (if any) device integration(s) does your app support?
 
-* ...
+- Camera
 
 Which (if any) progressive web app feature(s) does your app support?
 
-* ...
-
-
+- ...
 
 ## Mockup images
 
@@ -44,9 +43,7 @@ Which (if any) progressive web app feature(s) does your app support?
 
 **Is there anything special we need to know in order to effectively test your app? (optional):**
 
-* ...
-
-
+- ...
 
 ## Screenshots of Site (complete)
 
@@ -55,15 +52,15 @@ along with a very brief caption:**
 
 ![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
 
-
-
 ## External Dependencies
 
 **Document integrations with 3rd Party code or services here.
 Please do not document required libraries (e.g., React, Azure serverless functions, Azure nosql).**
 
-* Library or service name: description of use
-* ...
+- cloudinary/react & cloudinary/url-gen: for image storage
+- react-chartjs-2: for displaying graphs
+- react-liquid-gauge: beautiful UI for displaying progress
+- react-loading: for displaying of loading state
 
 **If there's anything else you would like to disclose about how your project
 relied on external code, expertise, or anything else, please disclose that

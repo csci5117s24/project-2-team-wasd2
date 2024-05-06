@@ -19,6 +19,7 @@ export const WaterGoalRoute = {
 const cmToInCoefficient = 0.3937007874;
 const kgToLbsCoefficient = 2.20462;
 const ozToMlCoefficient = 29.5735;
+const mlToOzCoefficient = 0.033814;
 
 async function getWaterGoal() {
     const goal = await SendGet("/api/water/goal", {});
@@ -39,7 +40,11 @@ function PageWaterGoal() {
         var weightInKg = weight.unit === "kg" ? weight.value : weight.value * (1.0/kgToLbsCoefficient);
         var heightInCm = height.unit === "cm" ? height.value : height.value * (1.0/cmToInCoefficient);
         var intakeInMl = Math.round((weightInKg + heightInCm) * 10);
-        setGoal({value: intakeInMl, unit: "ml"});
+        if(goal.unit === 'oz') {
+            setGoal({value: Math.round(intakeInMl*mlToOzCoefficient), unit: goal.unit})
+        } else {
+            setGoal({value: intakeInMl, unit: "ml"});
+        }
     }
 
     async function setWaterGoal() {

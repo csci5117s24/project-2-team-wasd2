@@ -55,19 +55,20 @@ function PageCalorie() {
 
     useEffect(()=>{
         async function fetchData() {
-            const workoutList = await getWorkouts();
-            const calorieGoal = await getCalorieGoal();
-            const calorieLogs = await getCalorieLogs();
-            let curAchieved = 0;
-            if (calorieGoal) {
-                curAchieved = calAchieved(calorieLogs, calorieGoal.goal)
-                setGoal(calorieGoal.goal);
-            } else {
-                setEditGoal(true);
-            }
-            setWorkouts(workoutList);
-            setCalorieLogs(calorieLogs);
-            setAchieved(curAchieved);
+            Promise.all([
+                getWorkouts(),
+                getCalorieGoal(),
+                getCalorieLogs()
+            ]).then(([workoutList, calorieGoal, calorieLogs]) => {
+                let curAchieved = 0;
+                if (calorieGoal) {
+                    curAchieved = calAchieved(calorieLogs, calorieGoal.goal)
+                    setGoal(calorieGoal.goal);
+                }
+                setWorkouts(workoutList);
+                setCalorieLogs(calorieLogs);
+                setAchieved(curAchieved);
+            }).catch(error=>{console.error(error)});
         }
         fetchData();
     }, [])
@@ -136,6 +137,7 @@ function PageCalorie() {
                 <img src="/quote-right.svg" alt="quote"></img>
             </div>
             <div>
+                <div className='section'>
                 {editGoal ? 
                     <div className='calorie-goal'>
                         <input type='text' value={goal} onChange={(e) => {handleGoalChange(e)}}></input>
@@ -144,13 +146,14 @@ function PageCalorie() {
                     <div className='calorie-goal'>
                         <span>Daily Calorie Goal: <span style={{fontWeight: 'bold'}}>{goal}</span></span> <button onClick={()=>{setEditGoal(true)}}>edit</button>
                     </div>}
-                <ProgressBar completed={achieved} bgColor="#836FFF"/>
-                <Link to="/exercise/calendar"> History</Link>
+                <div style={{padding: '0 10%'}}><ProgressBar completed={achieved} bgColor="#836FFF"/></div>
+                </div>
                 <h1 className='third-title'>You Workouts 
                     <span className='title-link'><Link className='title-link' to="/exercise/workout"> Manage</Link></span>
                 </h1>
                 <WorkoutList workouts={workouts} addCalorieLog={addCalorieLog}/>
                 <h1 className='third-title'>You Exercise Log for Today</h1>
+                <Link to="/exercise/calendar" style={{color: 'var(--my-blue)'}}> History</Link>
                 <CaloriesLogList calorieLogs={calorieLogs} deleteLog={removeCalorieLog}/>
             </div>
         </div>

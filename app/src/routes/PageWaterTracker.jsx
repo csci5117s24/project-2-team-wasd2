@@ -24,6 +24,9 @@ async function getWaterGoal() {
 async function newWaterLog(value, unit) {
     // const timezoneOffset = new Date().getTimezoneOffset();
     const res = await SendPost("/api/water", {value: value, unit: unit});
+    if (!res) {
+        return "";
+    }
     return res.id;
 }
 
@@ -50,16 +53,21 @@ export function PageWaterTracker() {
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
-            const curGoal = await getWaterGoal();
-            if (!curGoal) {
-                window.location.href = "/water/goal";
-            }
-            const curLogs = await getWaterLogs();
-            const newAchieved = calAchieved(curLogs, curGoal);
-            setGoal({value: curGoal.value, unit: curGoal.unit});
-            setLoading(false);
-            setWaterLogs(curLogs);
-            setAchieved(newAchieved);
+
+            Promise.all([
+                getWaterGoal(),
+                getWaterLogs()
+            ]).then(([curGoal, curLogs]) => {
+                if (!curGoal) {
+                    window.location.href = "/water/goal";
+                }
+                const newAchieved = calAchieved(curLogs, curGoal);
+                setGoal({value: curGoal.value, unit: curGoal.unit});
+                setWaterLogs(curLogs);
+                setAchieved(newAchieved);
+                setLoading(false);
+
+            }).catch(error=>{console.log(error)});
         }
         fetchData();
     }, []);
@@ -102,6 +110,9 @@ export function PageWaterTracker() {
 
     async function addWaterLog(data) {
         const logId = await newWaterLog(data.value, data.unit);
+        if (!logId) {
+            return
+        }
         const newLog = {
             _id: logId,
             id: logId,
