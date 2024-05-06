@@ -4,6 +4,7 @@ import styles from '../css/WorkoutForm.module.css';
 import PageContainer from "../components/PageContainer";
 import WorkoutList from './WorkoutList';
 import { SendGet, SendPost } from '../common/http';
+import { Link } from 'react-router-dom';
 
 export const WorkOutFormRoute = {
     path: "/exercise",
@@ -66,12 +67,11 @@ export function WorkoutForm() {
     
     
     return (
-        <div>
-            <div className="motto-container">
-                <p className="motto">Strength for Life: Embrace Fitness, Choose Wellness!</p>
-                <img src="/quote-right.svg" alt="quote"></img>
+        <div className='section'>
+            <div className="sub-nav">
+                <Link to="/exercise" style={{color: 'var(--my-blue)'}}> Back to Daily Exercise Log</Link>
             </div>
-            <h1>Log Your Workouts here:</h1>
+            <h1 className='primary-title'>Log Your Workouts here</h1>
             <form onSubmit={handleSubmit}>
                 <input type="text" className={styles.formInput} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Workout Title" />
                 <textarea className={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />

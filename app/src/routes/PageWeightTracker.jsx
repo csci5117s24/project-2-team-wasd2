@@ -41,6 +41,9 @@ async function getWeightLogs() {
 }
 async function newWeightLog(log) {
     const res = await SendPost("/api/weight", {...log});
+	if (!res) {
+		return "";
+	}
     return res.id;
 }
 
@@ -59,16 +62,17 @@ export function PageWeightTracker() {
 
     useEffect(() => {
         async function fetchData() {
-            // get goal
-			var curGoal = await getWeightGoal();
-            // get weight logs
-            var curLogs = await getWeightLogs();
-			if (curGoal !== null) {
-				setGoal(curGoal);
-			} else {
-				window.location.href = "/weight/goal"
-			}
-            setWeightLogs(curLogs);
+			Promise.all([
+				getWeightGoal(),
+				getWeightLogs()
+			]).then(([curGoal, curLogs]) => {
+				if (curGoal !== null) {
+					setGoal(curGoal);
+				} else {
+					window.location.href = "/weight/goal"
+				}
+				setWeightLogs(curLogs);
+			}).catch(error => {console.error(error)});
         }
         fetchData();
     }, []);
@@ -76,7 +80,7 @@ export function PageWeightTracker() {
 	const loggedToday = weightLogs.length !== 0 && (weightLogs[weightLogs.length-1].timestamp >= Date.now() - oneDayInMilliSec);
 	let daysLeft = "-";
 	if (goal.deadline !== 0) {
-		daysLeft = Math.floor((new Date(goal.deadline) - new Date()) / (oneDayInMilliSec)) + 1;
+		daysLeft = Math.floor((new Date(goal.deadline) - new Date(new Date().toLocaleDateString())) / (oneDayInMilliSec)) + 1;
 	}
 
     function editLog(data, picture) {
@@ -106,6 +110,9 @@ export function PageWeightTracker() {
 
 	async function addWeightLog(data, picture) {
         const logId = await newWeightLog({...data, timestamp: Date.now(), picture});
+		if (!logId) {
+			return
+		}
         const newLog = {
 			_id: logId,
             value: data.value,
@@ -228,7 +235,9 @@ function WeightLogModal({ showModal, setShowModal, weightLog, unit, addOrUpdateL
                 return
             }
 			newData.value = newValue;
-        }
+        } else {
+			newData.value = e.value;
+		}
 
 		if (e.unit){
 			newData.unit = e.unit

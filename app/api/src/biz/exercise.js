@@ -118,7 +118,7 @@ async function GetWeeklyCalorieStats(userId, endDateStr) {
     const calorieLogs = await FindFromMongo(collectionCalorieLog, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
     let calorieGoals = await FindFromMongo(collectionCalorieGoal, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
     if (!calorieGoals || calorieGoals.length === 0) {
-        let latestGoal = await GetLatestCalorieGoal();
+        let latestGoal = await GetLatestCalorieGoal(userId);
         if (!latestGoal) {
             latestGoal = {
                 goal: 0,
@@ -127,11 +127,10 @@ async function GetWeeklyCalorieStats(userId, endDateStr) {
         }
         calorieGoals = [latestGoal];
     }
-
     const stats = formatCalorieStats(calorieLogs, calorieGoals);
 
     let res = [];
-    let j = calorieGoals.length-1;
+    let j = 0;
     for (let i = 6; i >= 0; i--) {
         let theDay = new Date(endDateStr);
         theDay.setDate(theDay.getDate() - i);
@@ -139,8 +138,8 @@ async function GetWeeklyCalorieStats(userId, endDateStr) {
         if (key in stats) {
             res.push(stats[key]);
         }  else {
-            while (j > 0  && calorieGoals[j].createdAt > theDay) {
-                j--;
+            while (j < calorieGoals.length-1 && calorieGoals[j+1].createdAt > theDay) {
+                j++;
             }
             res.push({
                 date: FormatDate(theDay),

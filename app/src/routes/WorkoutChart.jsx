@@ -3,6 +3,7 @@ import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import PageContainer from "../components/PageContainer";
 import { SendGet } from '../common/http';
+import { Link } from 'react-router-dom';
 
 
 export const WorkoutCalendarRoute = {
@@ -119,7 +120,10 @@ export default function WorkoutChart () {
     };
 
     return (
-        <div>
+        <div className='section'>
+            <div className="sub-nav">
+                <Link to="/exercise" style={{color: 'var(--my-blue)'}}> Back to Daily Exercise Log</Link>
+            </div>
             <h1 className='primary-title'>Weekly Calorie Tracker</h1>
             {/* {days.map((day, index) => (
                 <div key={index}>
