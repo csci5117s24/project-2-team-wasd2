@@ -148,11 +148,11 @@ function PageCalorie() {
                     </div>}
                 <div style={{padding: '0 10%'}}><ProgressBar completed={achieved} bgColor="#836FFF"/></div>
                 </div>
-                <h1 className='third-title'>You Workouts 
+                <h1 className='third-title'>Your Workouts 
                     <span className='title-link'><Link className='title-link' to="/exercise/workout"> Manage</Link></span>
                 </h1>
                 <WorkoutList workouts={workouts} addCalorieLog={addCalorieLog}/>
-                <h1 className='third-title'>You Exercise Log for Today</h1>
+                <h1 className='third-title'>Your Exercise Logs for Today</h1>
                 <Link to="/exercise/calendar" style={{color: 'var(--my-blue)'}}> History</Link>
                 <CaloriesLogList calorieLogs={calorieLogs} deleteLog={removeCalorieLog}/>
             </div>
