@@ -56,7 +56,7 @@ function WorkoutList({  fetchTrigger }) {
         const updatedWorkout = {
             title: editFormData.title,
             description: editFormData.description,
-            calories: editFormData.calories
+            calories: parseInt(editFormData.calories)
         };
     
         try {
