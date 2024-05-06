@@ -33,8 +33,10 @@ export function PageWeightGoal() {
     useEffect(() => {
         async function fetchData() {
             const curGoal = await getWeightGoal();
-            setGoal({value: curGoal.value, unit: curGoal.unit});
-            setDeadline(curGoal.deadline);
+            if (curGoal) {
+                setGoal({value: curGoal.value, unit: curGoal.unit});
+                setDeadline(curGoal.deadline);
+            }
         }
         fetchData();
     }, []);
