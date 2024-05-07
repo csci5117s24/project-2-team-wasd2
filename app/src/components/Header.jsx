@@ -47,7 +47,7 @@ function NormalHeader() {
             </div>
             <div className="level-right">
                 <div className="level-item">
-                    <UserInfo/>
+                    <UserInfo showName={ true }/>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@ function MobileHeader() {
         <div className="header">
             <img className="mobile-logo" src="/options.svg" alt="logo"></img>
             <DropdownNav/>
-            <UserInfo/>
+            <UserInfo showName={false}/>
         </div>
     )
 }
@@ -133,7 +133,7 @@ function DropdownNav() {
     )
 }
 
-function UserInfo() {
+function UserInfo({ showName }) {
 
     const userinfo  = useContext(UserContext);
     const username = userinfo ? userinfo.userDetails : "";
@@ -149,7 +149,7 @@ function UserInfo() {
     return (
         <div className="user-info">
             {avtarUrl && <img className="avatar" src={avtarUrl} alt="avatar"/>}
-            {username && <p className="username">{username}</p>}
+            {username && showName && <p className="username">{username}</p>}
             {username ? 
                 <button className="button is-primay" onClick={logout}>Log Out</button> : 
                 <button className="button is-primay" onClick={login}>Log In</button>}

@@ -4,7 +4,6 @@ import UserContext from "../components/UserContext";
 import "../css/PageMain.css";
 import { LineChart } from "../components/Charts";
 import { SendGet } from "../common/http";
-import ReactLoading from 'react-loading';
 
 export const MainpageRoute = {
     path: "/",
