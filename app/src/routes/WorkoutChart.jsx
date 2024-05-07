@@ -36,7 +36,6 @@ export default function WorkoutChart () {
     async function getStats(endDate) {
         const result = await SendGet("/api/calorie/stats", {endDate: endDate.toLocaleDateString()});
         const stats = result.stats.map((stat) => {return {day: stat.date, goal: stat.calorieGoal, consumed: stat.calories}});
-        // setDays(stats);
         return stats;
     }
 
@@ -65,27 +64,6 @@ export default function WorkoutChart () {
     }
 
     
-    // Handle changes in calorie input
-    function handleCalorieInput(dayIndex, consumed) {
-        const newDays = days.map((day, index) => {
-            if (index === dayIndex) {
-                return { ...day, consumed: parseInt(consumed, 10) };
-            }
-            return day;
-        });
-        setDays(newDays);
-    }
-
-    // Handle changes in goal input
-    function handleGoalInput(dayIndex, goal) {
-        const newDays = days.map((day, index) => {
-            if (index === dayIndex) {
-                return { ...day, goal: parseInt(goal, 10) };
-            }
-            return day;
-        });
-        setDays(newDays);
-    }
 
     // Data for the chart
     const data = {
@@ -125,23 +103,6 @@ export default function WorkoutChart () {
                 <Link to="/exercise" style={{color: 'var(--my-blue)'}}> Back to Daily Exercise Log</Link>
             </div>
             <h1 className='primary-title'>Weekly Calorie Tracker</h1>
-            {/* {days.map((day, index) => (
-                <div key={index}>
-                    <div>{day.day}</div>
-                    <input
-                        type="number"
-                        placeholder="Enter calories consumed"
-                        value={day.consumed}
-                        onChange={(e) => handleCalorieInput(index, e.target.value)}
-                    />
-                    <input
-                        type="number"
-                        placeholder="Set calorie goal"
-                        value={day.goal}
-                        onChange={(e) => handleGoalInput(index, e.target.value)}
-                    />
-                </div>
-            ))} */}
             <Line data={data} options={options} />
             <div className="h-container">
                     <button className="button" style={{margin: "1rem", marginBottom: "0"}} onClick={handleClickPre}> pre </button>

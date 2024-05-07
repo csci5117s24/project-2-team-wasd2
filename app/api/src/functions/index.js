@@ -39,7 +39,7 @@ app.http('getExerciseLogs', {
     handler: async (request, context) => {
         const token = await authenticate(request);
         if (!token) {
-            return { status: 401, jsonBody: { error: "Unauthorized access" } };
+            return { status: 401, jsonBody: { error: "unauthorized access" } };
         }
 
         const userId = token.userId;
@@ -64,8 +64,8 @@ app.http('getExerciseLogs', {
                 jsonBody: { exerciseLogs }
             };
         } catch (error) {
-            console.error("Error retrieving exercise logs:", error);
-            return { status: 500, jsonBody: { error: "Failed to retrieve exercise logs" } };
+            console.error("error retrieving logs:", error);
+            return { status: 500, jsonBody: { error: "failed to retrieve logs" } };
         } finally {
             client.close(); 
         }
