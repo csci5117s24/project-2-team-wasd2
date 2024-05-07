@@ -22,7 +22,9 @@ async function getWorkouts() {
 }
 
 async function setCalorieGoal(newGoal) {
-    await SendPost('/api/calorie/goal', {goal: newGoal});
+    const now = new Date();
+    await SendPost('/api/calorie/goal',
+        {goal: newGoal, timestamp: now.getTime(), localeDate: now.toLocaleDateString()});
 }
 
 async function getCalorieGoal() {
@@ -31,7 +33,9 @@ async function getCalorieGoal() {
 }
 
 async function newCalorieLog(workoutId) {
-    const result = await SendPost('/api/calorie/log', {exerciseId: workoutId});
+    const now = new Date();
+    const result = await SendPost('/api/calorie/log',
+        {exerciseId: workoutId, timestamp: now.getTime(), localeDate: now.toLocaleDateString()});
     return result.id;
 }
 

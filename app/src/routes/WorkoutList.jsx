@@ -23,10 +23,7 @@ function WorkoutList({  fetchTrigger }) {
     };
 
     useEffect(() => {
-        fetchWorkouts();  
-        // this will call API infinitely
-        // const interval = setInterval(fetchWorkouts, 2000);  
-        // return () => clearInterval(interval);  
+        fetchWorkouts(); 
     }, [fetchTrigger]);
 
     const handleDeleteWorkout = async (_id) => {

@@ -1,5 +1,6 @@
 const { FindFromMongo } = require('../common/mongo');
 const { FormatDate } = require('../common/utils');
+const { OneDayInMilliSec } = require('../common/consts');
 
 
 module.exports = {
@@ -9,7 +10,7 @@ module.exports = {
 
 const defaultUnit = "oz";
 
-async function GetWaterLogStatistics(userId, rangeType, endDateStr) {
+async function GetWaterLogStatistics(userId, rangeType, endDateStr, endTime) {
     const waterGoal = await FindFromMongo("water_goal", {userId: userId});
     let goalUnit;
     if (!waterGoal || waterGoal.length == 0) {
@@ -19,11 +20,11 @@ async function GetWaterLogStatistics(userId, rangeType, endDateStr) {
     }
     var res = [];
     if (rangeType === "days") {
-        res = await getLast7DayLog(userId, goalUnit, endDateStr);
+        res = await getLast7DayLog(userId, goalUnit, endDateStr, endTime);
     } else if (rangeType === "weeks") {
-        res = await getLast4WeekLog(userId, goalUnit, endDateStr);
+        res = await getLast4WeekLog(userId, goalUnit, endDateStr, endTime);
     } else if (rangeType === "months") {
-        res = await getLast12MonthLog(userId, goalUnit, endDateStr);
+        res = await getLast12MonthLog(userId, goalUnit, endDateStr, endTime);
     }
     return res;
 }
@@ -31,26 +32,23 @@ async function GetWaterLogStatistics(userId, rangeType, endDateStr) {
 const weekDays = ["Sun", "Mon", "Thu", "Wed", "Tru", "Fri", "Sat"];
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-async function getLast7DayLog(userId, unit, endDateStr) {
-    let endDate = new Date(endDateStr);
-    endDate.setDate(endDate.getDate()+1);
-    let startDate = new Date(endDateStr);
-    startDate.setDate(startDate.getDate() -6);
-    const waterLogs = await FindFromMongo("water", {userId: userId, createDate: {$gte: startDate, $lt: endDate}});
+async function getLast7DayLog(userId, unit, endDateStr, endTime) {
+    const startTime = endTime - OneDayInMilliSec * 7;
+    const waterLogs = await FindFromMongo("water", {userId: userId, timestamp: {$gte: startTime, $lt: endTime}});
 
-    function keyFunc(date) {
-        return date.toLocaleDateString(); 
+    function keyFunc(waterLog) {
+        return waterLog.localeDate;
     }
     let stats = calStat(waterLogs, keyFunc, unit);
 
     let res = [];
-    for (let i = 0; i < 7; i++) {
-        let theDay = new Date(startDate.toLocaleDateString());
-        theDay.setDate(theDay.getDate() + i);
+    for (let i = 6; i >= 0; i--) {
+        let theDay = new Date(endDateStr);
+        theDay.setDate(theDay.getDate() - i);
         const key = theDay.toLocaleDateString();
         const value = stats[key] ?? 0;
         res.push({
-            label: FormatDate(theDay),
+            label: FormatDate(theDay.toLocaleDateString()),
             value: value
         })
     }
@@ -79,18 +77,17 @@ function genWeeksLable(startDate) {
     return res
 }
 
-async function getLast4WeekLog(userId, unit, endDateStr) {
-    let endDate = new Date(endDateStr);
-    endDate.setDate(endDate.getDate()+1);
-    let startDate = new Date(endDateStr);
-    startDate.setDate(startDate.getDate() -27);
-    const waterLogs = await FindFromMongo("water", {userId: userId, createDate: {$gte: startDate, $lt: endDate}});
+async function getLast4WeekLog(userId, unit, endDateStr, endTime) {
+    const startTime = endTime - OneDayInMilliSec * 27;
+    const waterLogs = await FindFromMongo("water", {userId: userId, timestamp: {$gte: startTime, $lt: endTime}});
 
-    function keyFunc(date) {
-        const diffDays = dateDiffInDays(date, endDate);
+    function keyFunc(waterLog) {
+        const diffDays = (endTime - waterLog.timestamp) / OneDayInMilliSec;
         return Math.floor(diffDays / 7);
     }
     let stats = calStat(waterLogs, keyFunc, unit);
+    let startDate = new Date(endDateStr);
+    startDate.setDate(startDate.getDate() -27);
     const weeks = genWeeksLable(startDate);
 
     let res = [];
@@ -107,25 +104,19 @@ async function getLast4WeekLog(userId, unit, endDateStr) {
     }
 }
 
-async function getLast12MonthLog(userId, unit, endDateStr) {
-    // const today = new Date().toLocaleDateString();
-    let endDate = new Date(endDateStr);
-    // the first day of next month
-    endDate.setMonth(endDate.getMonth() + 1);
-    endDate.setDate(1);
-    // the day one year ahead endDate
-    let startDate = new Date(endDateStr);
-    startDate.setMonth(startDate.getMonth() + 1);
-    startDate.setDate(1);
-    startDate.setFullYear(startDate.getFullYear()-1);
+async function getLast12MonthLog(userId, unit, endDateStr, endTime) {
 
-    const waterLogs = await FindFromMongo("water", {userId: userId, createDate: {$gte: startDate, $lt: endDate}});
+    const startTime = endTime - OneDayInMilliSec * 365; // small inaccuracy here
 
-    function keyFunc(date) {
-        return date.getMonth(); 
+    const waterLogs = await FindFromMongo("water", {userId: userId, timestamp: {$gte: startTime, $lt: endTime}});
+
+    function keyFunc(waterLog) {
+        const splits = waterLog.localeDate.split("/");
+        return parseInt(splits[0]) - 1;
     }
     let stats = calStat(waterLogs, keyFunc, unit);
 
+    const endDate = new Date(endDateStr);
     const firstMonth = endDate.getMonth();
     let res = [];
     for (let i = 0; i < 12; i++) {
@@ -150,7 +141,7 @@ function calStat(waterLogs, keyFunc, targetUnit) {
         if (waterLogs[i].unit !== targetUnit) {
             value = transToUnit(value, targetUnit);
         } 
-        const key = keyFunc(waterLogs[i].createDate);
+        const key = keyFunc(waterLogs[i]);
         if (key in res) {
             res[key] += value
         } else {

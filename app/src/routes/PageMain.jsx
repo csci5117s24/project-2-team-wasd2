@@ -80,10 +80,13 @@ function DailyCharts() {
         async function fetchData() {
 
             const today = new Date().toLocaleDateString();
+            let tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const endTime = tomorrow.getTime();
             Promise.all([
-                SendGet("/api/water/stats", {rangeType: "days", dateStr: today}),
-                SendGet("/api/weight/stats", {endDate: today}),
-                SendGet("/api/calorie/stats", {endDate: today}),
+                SendGet("/api/water/stats", {rangeType: "days", endDate: today, endTime: endTime}),
+                SendGet("/api/weight/stats", {endDate: today, endTime: endTime}),
+                SendGet("/api/calorie/stats", {endDate: today, endTime: endTime}),
             ]).then(([water, weight, exercise]) => {
                 const weightData = weight.stats.map((stat) => {return {label: stat.date, value: stat.value}});
                 const exerciseData = exercise.stats.map((stat) => {return {label: stat.date, value: stat.calories}})

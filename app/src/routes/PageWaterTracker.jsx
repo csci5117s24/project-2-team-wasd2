@@ -22,8 +22,9 @@ async function getWaterGoal() {
 }
 
 async function newWaterLog(value, unit) {
-    // const timezoneOffset = new Date().getTimezoneOffset();
-    const res = await SendPost("/api/water", {value: value, unit: unit});
+    const now = new Date();
+    const res = await SendPost("/api/water", 
+        {value: value, unit: unit, timestamp: now.getTime(), localeDate: now.toLocaleDateString()});
     if (!res) {
         return "";
     }
@@ -185,7 +186,6 @@ function WaterLogList({ waterLogs, editLog, deleteLog }) {
 
 function LogItem({log, editLog, deleteLog}) {
     
-    // const [showBubble, setShowBubble] = useState(false);
     const [showEditLog, setShowEditLog] = useState(false);
 
     return (
