@@ -23,8 +23,6 @@ export const MainpageWorkoutFormRoute = {
 
 export function WorkoutForm() {
     const [workouts, setWorkouts] = useState([]);
-    const [calorieGoal, setCalorieGoal] = useState(1000);
-
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [calories, setCalories] = useState(0);
@@ -42,15 +40,15 @@ export function WorkoutForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!title || !description || !calories) {
-            console.log('Please fill all fields.');
+            console.log('Please fill all the fields.');
             return;
         }
         const newWorkout = { title, description, calories: parseInt(calories, 10) };
-        console.log("Submitting new workout:", newWorkout);
+        console.log("submit new workout:", newWorkout);
     
         try {
             const result = await SendPost('/api/exercise', newWorkout);
-            console.log("Results:", result);
+            console.log("results:", result);
             
             if (result && result.id) {
                 setWorkouts([...workouts, { ...newWorkout, id: result.id, count: 0 }]);
@@ -61,7 +59,7 @@ export function WorkoutForm() {
 
             }
         } catch (error) {
-            console.error("Error in posting workout:", error);
+            console.error("error posting:", error);
         }
     };
     

@@ -34,14 +34,6 @@ function WorkoutList({  fetchTrigger }) {
         setWorkouts(workouts.filter(workout => String(workout._id) !== String(_id)));
     };
 
-    const handleEditClick = (workout) => {
-        setEditingId(workout._id);
-        setEditFormData({
-            title: workout.title,
-            description: workout.description,
-            calories: workout.calories
-        });
-    };
 
     const handleEditFormChange = (event) => {
         const { name, value } = event.target;
