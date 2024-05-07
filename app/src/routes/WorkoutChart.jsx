@@ -34,7 +34,10 @@ export default function WorkoutChart () {
     const [days, setDays] = useState(initialData);
 
     async function getStats(endDate) {
-        const result = await SendGet("/api/calorie/stats", {endDate: endDate.toLocaleDateString()});
+        let tomorrow = new Date(endDate.toLocaleDateString());
+        tomorrow.setDate(tomorrow.getDate() +1);
+        const result = await SendGet("/api/calorie/stats", 
+            {endDate: endDate.toLocaleDateString(), endTime: tomorrow.getTime()});
         const stats = result.stats.map((stat) => {return {day: stat.date, goal: stat.calorieGoal, consumed: stat.calories}});
         return stats;
     }

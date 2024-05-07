@@ -1,5 +1,6 @@
 const { FindFromMongo, InsertToMongo, UpdateMongo, DeleteFromMongo, FindByIDFromMongo, FindFromMongoWithSort } = require('../common/mongo');
 const { FormatDate } = require('../common/utils');
+const { OneDayInMilliSec } = require('../common/consts');
 
 module.exports = {
     GetExerciseLogs,
@@ -26,7 +27,6 @@ async function GetExerciseLogs(userId) {
 
 // Add a new exercise log
 async function AddExerciseLog(exerciseLog) {
-    // console.log("work ", exerciseLog)
     return await InsertToMongo("exercise_logs", exerciseLog);
 }
 
@@ -35,20 +35,18 @@ async function UpdateExerciseLog(logId, updates) {
     return await UpdateMongo("exercise_logs", logId, updates);
 }
 
-async function SetDailyCalorieGoal(userId, goal) {
-    const today = new Date().toLocaleDateString();
-    let startTime = new Date(today);
-    let endTime = new Date(today);
-    endTime.setHours(endTime.getHours() + 24);
-    const existingGoal = await FindFromMongo(collectionCalorieGoal, {userId: userId, createdAt: {$gte:startTime, $lt:endTime}});
+async function SetDailyCalorieGoal(userId, data) {
+    const existingGoal = await FindFromMongo(collectionCalorieGoal, {userId: userId, localeDate: data.localeDate});
     if (existingGoal && existingGoal.length > 0) {
         const recordID = existingGoal[0]._id;
-        await UpdateMongo(collectionCalorieGoal, recordID, {goal: goal});
+        await UpdateMongo(collectionCalorieGoal, recordID, {goal: data.goal});
     } else {
         const goalRecord = {
             userId: userId,
-            goal: goal,
-            createdAt: new Date()
+            goal: data.goal,
+            localeDate: data.localeDate,
+            timestamp: data.timestamp
+            // createdAt: new Date()
         }
         await InsertToMongo(collectionCalorieGoal, goalRecord);
     }
@@ -69,17 +67,19 @@ async function DeleteExerciseLog(userId, logId) {
 }
 
 
-async function AddCalorieLog(userId, exerciseId) {
-    const exercise = await FindByIDFromMongo(collectionExerciseLog, exerciseId);
+async function AddCalorieLog(userId, data) {
+    const exercise = await FindByIDFromMongo(collectionExerciseLog, data.exerciseId);
     if (!exercise || exercise.userId !== userId) {
         return -1;
     }
     const calorieLog = {
         userId: userId,
-        exerciseId: exerciseId,
+        exerciseId: data.exerciseId,
         exerciseName: exercise.title,
         calories: exercise.calories,
-        createdAt: new Date(),
+        timestamp: data.timestamp,
+        localeDate: data.localeDate,
+        // createdAt: new Date(),
     }
     
     const logId = await InsertToMongo(collectionCalorieLog, calorieLog);
@@ -88,10 +88,7 @@ async function AddCalorieLog(userId, exerciseId) {
 }
 
 async function GetCalorieLogs(userId, dateStr) {
-    const startTime = new Date(dateStr);
-    let endTime = new Date(dateStr);
-    endTime.setDate(endTime.getDate()+1);
-    const logs = await FindFromMongo(collectionCalorieLog, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
+    const logs = await FindFromMongo(collectionCalorieLog, {userId: userId, localeDate: dateStr});
     return logs;
 }
 
@@ -110,19 +107,16 @@ async function GetLatestCalorieGoal(userId) {
 }
 
 
-async function GetWeeklyCalorieStats(userId, endDateStr) {
-    let startTime = new Date(endDateStr);
-    startTime.setDate(startTime.getDate() - 6);
-    let endTime = new Date(endDateStr);
-    endTime.setDate(endTime.getDate() + 1);
-    const calorieLogs = await FindFromMongo(collectionCalorieLog, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
-    let calorieGoals = await FindFromMongo(collectionCalorieGoal, {userId: userId, createdAt: {$gte: startTime, $lt: endTime}});
+async function GetWeeklyCalorieStats(userId, endDateStr, endTime) {
+    const startTime = endTime - OneDayInMilliSec * 7;
+    const calorieLogs = await FindFromMongo(collectionCalorieLog, {userId: userId, timestamp: {$gte: startTime, $lt: endTime}});
+    let calorieGoals = await FindFromMongo(collectionCalorieGoal, {userId: userId, timestamp: {$gte: startTime, $lt: endTime}});
     if (!calorieGoals || calorieGoals.length === 0) {
         let latestGoal = await GetLatestCalorieGoal(userId);
         if (!latestGoal) {
             latestGoal = {
                 goal: 0,
-                createdAt: new Date()
+                timestamp: 0
             }
         }
         calorieGoals = [latestGoal];
@@ -138,11 +132,11 @@ async function GetWeeklyCalorieStats(userId, endDateStr) {
         if (key in stats) {
             res.push(stats[key]);
         }  else {
-            while (j < calorieGoals.length-1 && calorieGoals[j+1].createdAt > theDay) {
+            while (j < calorieGoals.length-1 && calorieGoals[j+1].timestamp > theDay.getTime()) {
                 j++;
             }
             res.push({
-                date: FormatDate(theDay),
+                date: FormatDate(theDay.toLocaleDateString()),
                 calories: 0,
                 calorieGoal: calorieGoals[j].goal,
             })
@@ -157,15 +151,15 @@ function formatCalorieStats(calorieLogs, calorieGoals) {
     let i = calorieLogs.length - 1;
     let j = calorieGoals.length - 1;
     for ( ; i  >= 0; i--) {
-        const key = calorieLogs[i].createdAt.toLocaleDateString();
+        const key = calorieLogs[i].localeDate;
         if (key in res) {
             res[key].calories += calorieLogs[i].calories;
         } else {
-            while (j > 0 && calorieGoals[j].createdAt > calorieLogs[i].createdAt) {
+            while (j > 0 && calorieGoals[j].timestamp > calorieLogs[i].timestamp) {
                 j--;
             }
             let stat = {
-                date: FormatDate(calorieLogs[i].createdAt),
+                date: FormatDate(calorieLogs[i].localeDate),
                 calories: calorieLogs[i].calories,
                 calorieGoal: calorieGoals[j].goal,
             }

@@ -83,7 +83,10 @@ function HistoryChart() {
         const title = "Last 7 days";
         setDateRange("days");
         setChartTitle(title);
-        const data = await SendGet("/api/water/stats", {rangeType: "days", dateStr: endDate.toLocaleDateString()});
+        let endTime = new Date(endDate.toLocaleDateString());
+        endTime.setDate(endTime.getDate() + 1);
+        const data = await SendGet("/api/water/stats", 
+            {rangeType: "days", endDate: endDate.toLocaleDateString(), endTime: endTime.getTime()});
         setChartData(data.dataset);
     }
 
@@ -92,7 +95,12 @@ function HistoryChart() {
         const title = "Last 4 weeks";
         setChartTitle(title);
         setDateRange("weeks");
-        const data = await SendGet("/api/water/stats", {rangeType: "weeks", dateStr: endDate.toLocaleDateString()})
+        let endOfWeek = new Date(endDate.toLocaleDateString());
+        endOfWeek.setDate(endOfWeek.getDate() - endOfWeek.getDay() + 7);
+        let endTime = new Date(endOfWeek.toLocaleDateString());
+        endTime.setDate(endTime.getDate() + 1);
+        const data = await SendGet("/api/water/stats", 
+            {rangeType: "weeks", endDate: endOfWeek.toLocaleDateString(), endTime: endTime.getTime()})
         setChartData(data.dataset);
     }
 
@@ -101,7 +109,11 @@ function HistoryChart() {
         const title = "Last 12 months";
         setChartTitle(title);
         setDateRange("months");
-        const data = await SendGet("/api/water/stats", {rangeType: "months", dateStr: endDate.toLocaleDateString()})
+        let firstDayOfNextMonth = new Date(endDate.toLocaleDateString());
+        firstDayOfNextMonth.setMonth(firstDayOfNextMonth.getMonth() + 1);
+        firstDayOfNextMonth.setDate(1);
+        const data = await SendGet("/api/water/stats", 
+            {rangeType: "months", endDate: firstDayOfNextMonth.toLocaleDateString(), endTime: firstDayOfNextMonth.getTime()})
         setChartData(data.dataset);
     }
 
@@ -176,8 +188,8 @@ function ChartButton({description, clicked, handleClick}) {
 }
 
 function LogList({waterLogs}) {
-    function toLocaleTime(utcTime) {
-        let res = new Date(utcTime);
+    function toLocaleTime(timestamp) {
+        let res = new Date(timestamp);
         return res.toLocaleDateString() + " " + res.toLocaleTimeString();
     }
 
@@ -186,7 +198,7 @@ function LogList({waterLogs}) {
             <div className="waterlog-single">
                 <img className="cactus-log" src="/cactus.svg" alt="cactus"></img>
                 <p>{"" + wl.value + wl.unit}</p>
-                <p className="create-time">{toLocaleTime(wl.createDate)}</p>
+                <p className="create-time">{toLocaleTime(wl.timestamp)}</p>
             </div>
         </li>
     )

@@ -3,9 +3,6 @@ import { Outlet } from 'react-router-dom';
 import UserContext from './components/UserContext';
 import { useEffect, useState } from 'react';
 
-// todo: new auth 
-
-
 
 function App() {
 

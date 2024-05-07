@@ -77,7 +77,7 @@ export function PageWeightTracker() {
         fetchData();
     }, []);
 
-	const loggedToday = weightLogs.length !== 0 && (weightLogs[weightLogs.length-1].timestamp >= Date.now() - oneDayInMilliSec);
+	const loggedToday = weightLogs.length !== 0 && (weightLogs[weightLogs.length-1].localeDate === new Date().toLocaleDateString());
 	let daysLeft = "-";
 	if (goal.deadline !== 0) {
 		daysLeft = Math.floor((new Date(goal.deadline) - new Date(new Date().toLocaleDateString())) / (oneDayInMilliSec)) + 1;
@@ -109,17 +109,13 @@ export function PageWeightTracker() {
     }
 
 	async function addWeightLog(data, picture) {
-        const logId = await newWeightLog({...data, timestamp: Date.now(), picture});
+		const now = new Date();
+		let newLog = {...data, picture, timestamp: now.getTime(), localeDate: now.toLocaleDateString()};
+        const logId = await newWeightLog(newLog);
 		if (!logId) {
 			return
 		}
-        const newLog = {
-			_id: logId,
-            value: data.value,
-            unit: data.unit,
-			picture: picture,
-			timestamp: Date.now()
-        }
+		newLog._id = logId;
         setWeightLogs([...weightLogs, newLog]);
     }
 	
